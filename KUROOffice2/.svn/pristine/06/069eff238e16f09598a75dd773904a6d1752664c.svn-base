@@ -1,0 +1,130 @@
+package kr.or.ddit.mail.controller;
+
+import java.util.List;
+
+import javax.inject.Inject;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpSession;
+
+import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
+import org.springframework.validation.annotation.Validated;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.ModelAttribute;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.ResponseBody;
+
+import kr.or.ddit.contact.vo.ContactVO;
+import kr.or.ddit.employee.vo.EmployeeVO;
+import kr.or.ddit.mail.service.IMailService;
+import kr.or.ddit.mail.vo.MailRecVO;
+import kr.or.ddit.mail.vo.MailVO;
+import kr.or.ddit.message.vo.MesrecVO;
+import lombok.extern.slf4j.Slf4j;
+
+@Slf4j
+@Controller
+@RequestMapping("/mail")
+public class mailController {
+
+	@Inject
+	private IMailService mailService;
+
+	// 보낸메일함List
+	@GetMapping("/send")
+	public String Mailsend(HttpServletRequest req, Model model) {
+		
+		HttpSession session = req.getSession();
+		EmployeeVO empVO = (EmployeeVO) session.getAttribute("SessionInfo");
+		
+		List<MailVO> mailList = mailService.selectSendList(empVO.getEmpNo());
+		model.addAttribute("mailList", mailList);
+		log.info("보낸 mailList"+mailList);
+		
+		return "mail/send";
+	}
+	
+	
+
+	// 받은메일함List
+	@GetMapping("/recieveList")
+	public String MailRecieve(HttpServletRequest req, Model model) {
+		
+		HttpSession session = req.getSession();
+		EmployeeVO empVO = (EmployeeVO) session.getAttribute("SessionInfo");
+		
+		List<MailVO> receiveList = mailService.selectReceiveList(empVO.getEmpNo());
+		model.addAttribute("receiveList", receiveList);
+
+		return "mail/recieveList";
+	}
+
+	// 메일 detail
+	@GetMapping("/detail")
+	public String detail(@ModelAttribute MailVO mailVO, Model model) {
+
+		return "mail/detail";
+	}
+
+	// 메일보내기 주소록
+	@GetMapping("/write")
+	public String write(@Validated MailVO mailVO, Model model) {
+		
+		List<ContactVO> contactList = mailService.getContactList();
+		model.addAttribute("contactList", contactList);
+		
+		return "mail/write";
+	}
+	
+	//메일작성하기
+	@PostMapping("/write")
+	public String MailWrite(
+			@Validated MailVO mailVO,
+			HttpServletRequest req, Model model) {
+		
+		String sendEmpNo = ((EmployeeVO)req.getSession().getAttribute("SessionInfo")).getEmpNo();
+		String[] recvEmpNos = req.getParameterValues("empNo");
+		
+		int count = mailService.write(sendEmpNo,recvEmpNos,mailVO);
+		
+		if(recvEmpNos.length == count) {
+			model.addAttribute("msg", "ok");
+			
+		}
+			
+			List<ContactVO> contactList = mailService.getContactList();
+			model.addAttribute("contactList", contactList);
+			
+			return "mail/write";
+		
+		
+	}
+	//메일보내기 한 후 알림창
+	@GetMapping("process")
+	public String process() {
+		return "mail/process";
+	}
+
+
+	// 메일 쓰레기통
+	@GetMapping("/trash")
+	public String trash(Model model) {
+		model.addAttribute("pageMain", "Mail");
+		model.addAttribute("pageDetail", "trash");
+		model.addAttribute("pageName", "휴지통");
+
+		return "mail/trash";
+	}
+	
+	@PostMapping(value = "/update", produces = "text/plain")
+	@ResponseBody
+	public String updateMsg(@RequestBody MailRecVO mecVO){
+		
+		log.info("code >> "+mecVO.getMailCode());
+		mailService.updateMail(mecVO);
+		return "success";
+	}
+
+}

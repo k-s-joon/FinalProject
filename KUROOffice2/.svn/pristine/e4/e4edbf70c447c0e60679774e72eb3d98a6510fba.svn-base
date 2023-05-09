@@ -1,0 +1,116 @@
+package kr.or.ddit.main.controller;
+
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import javax.inject.Inject;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpSession;
+
+import org.apache.commons.collections.map.HashedMap;
+import org.json.simple.JSONArray;
+import org.json.simple.JSONObject;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+
+import com.google.gson.Gson;
+import com.google.gson.JsonObject;
+
+import kr.or.ddit.approval.service.IAppService;
+import kr.or.ddit.approval.vo.AplineVO;
+import kr.or.ddit.attfile.vo.AttFileVO;
+import kr.or.ddit.cloud.service.ICloudService;
+import kr.or.ddit.cloud.vo.CloudVO;
+import kr.or.ddit.common.Utils;
+import kr.or.ddit.common.vo.ComCodeVO;
+import kr.or.ddit.dep.vo.DepVO;
+import kr.or.ddit.employee.service.IEmpService;
+import kr.or.ddit.employee.vo.EmployeeVO;
+import kr.or.ddit.good.vo.GoodVO;
+import kr.or.ddit.main.service.IMainService;
+import kr.or.ddit.notice.vo.NoticeVO;
+import kr.or.ddit.timeline.vo.TimelineVO;
+import kr.or.ddit.work.vo.WorkVO;
+import lombok.extern.slf4j.Slf4j;
+
+@Slf4j
+@Controller
+@RequestMapping("/conn")
+public class LoginController {
+
+	@Inject
+	private IMainService loginService;
+	
+	@Inject
+	private IEmpService empService;
+	
+	@Inject
+	private IAppService appService; 
+	
+	@Inject
+	private ICloudService cloudService;
+	
+	@GetMapping("/login")
+	public String login() {
+		
+		return "main/login";
+	}
+	
+	@RequestMapping(value = "/login", method = RequestMethod.POST)
+	public String login(HttpServletRequest req, EmployeeVO empVO, Model model) throws Exception {
+		
+		// 임시 로그인 체크
+		log.info("no, pw >> " + empVO.getEmpNo()+", "+empVO.getEmpPw());
+		empVO = loginService.loginCheck(empVO);
+		
+		HttpSession session = req.getSession();
+		session.setAttribute("empVO", empVO);
+		
+		if (empVO == null) {
+			model.addAttribute("msg", "로그인 정보를 확인해주세요.");
+			return "conn/login";
+		}
+		
+		return "redirect:/main/home";
+		
+	}
+	
+
+	@GetMapping("/logout")
+	public String logout(HttpServletRequest req) {
+		
+		HttpSession session = req.getSession();
+		session.invalidate();
+		
+		return "conn/login";
+	}
+	
+	@RequestMapping(value = "/find", method = RequestMethod.GET)
+	public String loginFind(Model model) {
+		model.addAttribute("bodyText","login-page");
+		log.debug("find>>>");
+		return "conn/find";
+	}
+	
+	@RequestMapping(value = "/idfind", method = RequestMethod.POST)
+	public ResponseEntity<String> idFind(EmployeeVO empVO){
+		String empNo = empService.idFind(empVO);
+		return new ResponseEntity<String>(empNo,HttpStatus.OK);
+	}
+	
+	
+	
+	
+}
+
+
+

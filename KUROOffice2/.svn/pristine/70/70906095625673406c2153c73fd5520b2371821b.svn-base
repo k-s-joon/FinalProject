@@ -1,0 +1,11 @@
+package kr.or.ddit.mapper;
+
+import java.util.List;
+
+import kr.or.ddit.cloud.vo.CloudVO;
+
+public interface CloudMapper {
+
+	public List<CloudVO> list(String empNo);
+
+}

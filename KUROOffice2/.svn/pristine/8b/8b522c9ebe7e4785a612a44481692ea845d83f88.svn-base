@@ -1,0 +1,23 @@
+package kr.or.ddit.cloud.service;
+
+import java.util.List;
+
+import javax.inject.Inject;
+
+import org.springframework.stereotype.Service;
+
+import kr.or.ddit.cloud.vo.CloudVO;
+import kr.or.ddit.mapper.CloudMapper;
+
+@Service
+public class CloudServiceImpl implements ICloudService {
+
+	@Inject
+	private CloudMapper cloudMapper; 
+	
+	@Override
+	public List<CloudVO> list(String empNo) {
+		return cloudMapper.list(empNo); 
+	}
+
+}

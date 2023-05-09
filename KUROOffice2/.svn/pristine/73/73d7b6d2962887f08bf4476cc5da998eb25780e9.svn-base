@@ -1,0 +1,14 @@
+package kr.or.ddit.good.service;
+
+import java.util.List;
+
+import kr.or.ddit.employee.vo.EmployeeVO;
+import kr.or.ddit.good.vo.GoodVO;
+
+public interface IGoodService {
+
+	public List<GoodVO> getGoodList();
+
+	public List<EmployeeVO> getEmpByGoodList(List<GoodVO> goodList);
+
+}

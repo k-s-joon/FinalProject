@@ -1,0 +1,28 @@
+package kr.or.ddit.cloud.controller;
+
+import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+
+import lombok.extern.slf4j.Slf4j;
+
+@Controller
+@Slf4j
+@RequestMapping("/cloud")
+public class CloudController {
+
+	@GetMapping("/home")
+	public String home() {
+		return "cloud/home";
+	}
+	
+	@GetMapping("/depCloud")
+	public String depCloud() {
+		return "cloud/depCloud";
+	}
+	
+	@GetMapping("/myCloud")
+	public String myCloud() {
+		return "cloud/myCloud";
+	}
+}

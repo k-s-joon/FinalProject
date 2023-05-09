@@ -1,0 +1,15 @@
+package kr.or.ddit.mapper;
+
+import java.util.List;
+
+import kr.or.ddit.mail.vo.MailVO;
+
+public interface MailMapper {
+
+	//받은 메일함 List
+	public List<MailVO> getMailList();
+
+	//보낸 메일함 List
+	public List<MailVO> selectSendList(String empNo);
+
+}

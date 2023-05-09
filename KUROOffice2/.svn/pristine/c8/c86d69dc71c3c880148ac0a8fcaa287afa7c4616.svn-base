@@ -1,0 +1,27 @@
+package kr.or.ddit.mail.service;
+
+import java.util.List;
+
+import kr.or.ddit.contact.vo.ContactVO;
+import kr.or.ddit.employee.vo.EmployeeVO;
+import kr.or.ddit.mail.vo.MailVO;
+
+public interface IMailService {
+	
+	
+	//메일 발신함
+	public List<MailVO> getMailList();
+
+	//메일 발신함 (사원)
+	public List<EmployeeVO> getEmpByMailList(List<MailVO> receiveList);
+
+	//보낸 메일함 목록
+	public List<MailVO> selectSendList(String empNo);
+
+	// 메일 보내기 주소록 List
+	public List<ContactVO> getContactList();
+
+	
+	
+
+}

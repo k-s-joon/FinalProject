@@ -1,0 +1,15 @@
+package kr.or.ddit.cloud.service;
+
+import java.util.List;
+
+import kr.or.ddit.cloud.vo.CloudVO;
+
+public interface ICloudService {
+
+	public List<CloudVO> empCloud(String empNo);
+
+	public List<CloudVO> depCloud(String empNo);
+
+	public List<CloudVO> depFolderList(String depCode); 
+
+}

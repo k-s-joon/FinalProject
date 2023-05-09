@@ -1,0 +1,21 @@
+package kr.or.ddit.notice.service;
+
+import java.util.List;
+
+import kr.or.ddit.common.vo.ComCodeVO;
+import kr.or.ddit.employee.vo.EmployeeVO;
+import kr.or.ddit.notice.vo.NoticeVO;
+
+public interface INoticeService {
+
+	public List<NoticeVO> getNoticeList();
+
+	public List<EmployeeVO> getEmpByNoticeList(List<NoticeVO> noticeList);
+
+	public List<ComCodeVO> getPosByEmpList(List<EmployeeVO> empList);
+
+	public List<Integer> getGoodByNoticeList(List<NoticeVO> noticeList);
+
+	public void register(NoticeVO noticeVO);
+
+}

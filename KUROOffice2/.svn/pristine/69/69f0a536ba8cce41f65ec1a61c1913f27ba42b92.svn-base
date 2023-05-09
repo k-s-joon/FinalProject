@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="kr.or.ddit.mapper.CommentMapper">
+
+	<insert id="insertComm" parameterType="commVO" >
+		<selectKey keyProperty="commCode" resultType="string" order="BEFORE">
+			SELECT 'COMM'||COMM_SEQ.NEXTVAL FROM DUAL
+		</selectKey>	
+		insert into comm
+			(COMM_CODE, EMP_NO, COMM_TYPE, COMM_CONTENT, COMM_DATE, COMM_PATH)
+		values
+		(#{commCode},#{empNo},#{commType},#{commContent},sysdate,null)
+	</insert>
+
+<select id="list" resultType="commVO">
+select 
+*
+from comm
+where COMM_TYPE=#{commType}
+order by comm_code desc
+</select>
+
+<update id="updateComm" parameterType="commVO">
+update comm
+set 
+	EMP_NO = #{empNo},
+	COMM_TYPE = #{commType},
+	COMM_CONTENT = #{commContent},
+	COMM_DATE = sysdate,
+	COMM_PATH = NULL
+where COMM_CODE = #{commCode}
+
+</update>
+
+<delete id="deleteComm" parameterType="commVO">
+delete from comm
+where COMM_CODE = #{commCode}
+</delete>
+
+
+
+
+
+
+
+
+	<!--
+	<insert id="insertNotice" parameterType="noticeVO" useGeneratedKeys="true">
+		<selectKey keyProperty="boNo" resultType="int" order="BEFORE">
+			select seq_notice.nextval from dual
+		</selectKey>
+		insert into notice(
+			bo_no,bo_title,bo_content,bo_writer,bo_date
+		) values (
+			#{boNo},#{boTitle},#{boContent},#{boWriter},sysdate
+		)
+	</insert>	
+	
+	<update id="updateNotice" parameterType="noticeVO">
+		update notice
+		set
+			bo_title = #{boTitle},
+			bo_content = #{boContent},
+			bo_date = sysdate
+		where bo_no = #{boNo}
+	</update>
+	
+	<delete id="deleteNotice" parameterType="int">
+		delete from notice
+		where bo_no = #{boNo}
+	</delete>	
+	-->
+</mapper>
+
+
+
+
+
+

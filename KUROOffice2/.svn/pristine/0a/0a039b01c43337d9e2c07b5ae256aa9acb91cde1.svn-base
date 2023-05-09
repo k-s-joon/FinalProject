@@ -1,0 +1,123 @@
+package kr.or.ddit.free.controller;
+
+import java.util.ArrayList;
+import java.util.List;
+
+import javax.inject.Inject;
+
+import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+
+import kr.or.ddit.attfile.vo.AttFileVO;
+import kr.or.ddit.comment.service.ICommentService;
+import kr.or.ddit.comment.vo.CommentVO;
+import kr.or.ddit.common.Utils;
+import kr.or.ddit.common.vo.ComCodeVO;
+import kr.or.ddit.employee.vo.EmployeeVO;
+import kr.or.ddit.free.service.IFreeService;
+import kr.or.ddit.free.vo.FreeVO;
+import kr.or.ddit.good.vo.GoodVO;
+import kr.or.ddit.timeline.service.ITimelineService;
+import lombok.extern.slf4j.Slf4j;
+
+@Slf4j
+@Controller
+@RequestMapping("/free")
+public class FreeController {
+
+	@Inject
+	private IFreeService freeService;
+	
+	@Inject
+	private ICommentService commService;
+	
+
+	
+	@GetMapping("/home")
+	public String home(Model model) {
+		
+		List<FreeVO> freeList = freeService.getFreeList();
+		model.addAttribute("freeList", freeList);
+		
+		// 각 게시글의 작성자 List<EmployeeVO> 구하기
+		List<EmployeeVO> empList = freeService.getEmpByFreeList(freeList);
+		model.addAttribute("empList", empList);
+		
+		// 직급 리스트 posList
+		List<ComCodeVO> posList = freeService.getPosByEmpList(empList);
+		model.addAttribute("posList", posList);
+		
+		// 좋아요 수 구하기.
+		List<Integer> goodCountList = freeService.getGoodByFreeList(freeList);
+		model.addAttribute("goodCountList", goodCountList);
+		
+		return "free/home";
+	}
+	
+	@GetMapping("/detail")
+	public String detail(String freeCode, Model model) {
+		
+		// 조회수 증가 - 먼저 하고 getFree()
+		freeService.incrementHit(freeCode);
+		FreeVO freeVO = freeService.getFree(freeCode);
+		
+		model.addAttribute("freeVO", freeVO);
+		
+		// 작성자 empVO 구하기
+		EmployeeVO empVO = freeService.getEmpByFree(freeVO);
+		model.addAttribute("empVO", empVO);
+		
+		// 작성자 직급
+		ComCodeVO ccVO = new ComCodeVO();	
+		ccVO.setComGroup("EMP_POS");
+		ccVO.setComCode(empVO.getEmpPos());
+		
+		ccVO = freeService.getCc(ccVO);
+		model.addAttribute("ccVO", ccVO);
+		
+		// emp의 profile 구하기
+		AttFileVO afVO = new AttFileVO();
+		afVO.setAfType("PROFILE");
+		afVO.setAfTcode(empVO.getEmpNo());	
+		
+		afVO = freeService.getAf(afVO);
+		model.addAttribute("afVO", afVO);
+		
+		// 좋아요 리스트 구하기.
+		List<GoodVO> goodList = new ArrayList<GoodVO>();
+		goodList = freeService.getGood(freeVO.getFreeCode());
+		
+		
+		
+		
+		if (goodList.size() != 0) {
+			model.addAttribute("goodList", goodList);
+			
+			// 좋아요의 사원 리스트 구하기
+			List<EmployeeVO> empList = freeService.getEmpByGoodList(goodList);
+			model.addAttribute("empList", empList);
+			
+			// 사원 목록의 프로필 가져오기
+			List<AttFileVO> afList = freeService.getAfByEmpList(empList);
+			model.addAttribute("afList", afList);
+			
+			// 직급 리스트 posList
+			List<ComCodeVO> posList = freeService.getPosByEmpList(empList);
+			model.addAttribute("posList", posList);
+			
+			// 좋아요 지난시간 리스트 가져오기 -> 리스트가 날짜순으로 정렬되게 하기
+			List<ComCodeVO> timeList = freeService.getTimeList(goodList);
+			model.addAttribute("timeList", timeList);
+			
+		}else {
+			model.addAttribute("goodList", null);
+		}
+		List<CommentVO> CommList = commService.list(freeCode);
+		model.addAttribute("CommList",CommList);
+
+		
+		return "free/detail";
+	}
+}

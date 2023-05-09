@@ -1,0 +1,44 @@
+package kr.or.ddit.admin.controller;
+
+import javax.inject.Inject;
+
+import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
+import org.springframework.validation.annotation.Validated;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+
+import kr.or.ddit.employee.service.IEmpService;
+import kr.or.ddit.employee.vo.EmployeeVO;
+import lombok.extern.slf4j.Slf4j;
+
+@Slf4j
+@Controller
+@RequestMapping("/admin")
+public class AdminController {
+
+	@Inject
+	private IEmpService empSerivce;
+	
+	
+	
+	@RequestMapping(value = "/home", method = RequestMethod.GET)
+	public String admin() {
+		return "admin/home";
+	}
+	
+	
+	@RequestMapping(value = "/register", method = RequestMethod.GET)
+	public String registerForm(EmployeeVO empVO,Model model) {
+		model.addAttribute("empVO",empVO);
+		return "admin/register";
+	}
+	
+	@RequestMapping(value = "/register", method = RequestMethod.POST)
+	public String register(@Validated EmployeeVO empVO, Model model) {
+		empSerivce.register(empVO);
+		return "admin/home";
+	}
+	
+	
+}

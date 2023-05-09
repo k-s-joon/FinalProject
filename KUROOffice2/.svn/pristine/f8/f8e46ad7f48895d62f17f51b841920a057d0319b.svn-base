@@ -1,0 +1,498 @@
+<%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
+<%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c"%>
+<%@ taglib uri="http://java.sun.com/jsp/jstl/fmt" prefix="fmt" %>
+<script src="${pageContext.request.contextPath }/resources/dist/js/pages/notes/notes.js"></script>
+<!-- ===================[ sweetAlert ]================================-->
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11.4.10/dist/sweetalert2.min.js"></script>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11.4.10/dist/sweetalert2.min.css">
+<!-- ===================[ sweetAlert ]================================-->
+<style>
+.card{
+	margin:0;
+}
+#note-full-container{
+	padding: 15px 15px 25px;
+}
+.tab-content{
+/* 	background-color: #eef5f9; */
+    height: 890px; 
+}
+.card-body{
+	width: 200px;
+    height: 200px;
+    padding: 20px 0 0 20px;
+}
+.col-md-4 {
+/*
+    flex: 0 0 auto;
+    width: 22%;
+    margin: 20px 10px;
+#/
+   /**/
+   flex: 0 0 auto;
+    width: 16%;
+    margin: 20px 10px;
+    border: 2px solid #eee;
+    border-radius: 5px;
+}
+#folderIcon{
+	display:block;
+	margin: 10px auto;
+	width:90px;
+}
+.note-content{
+/* 	margin:20px; */
+}
+.note-content{
+	display: inherit;
+}
+.ckBox{
+	position: absolute;
+	top: 34%;
+	margin-left: 20px;
+/* 	right: 80%; */
+    width: 20px;
+    height: 20px;
+    z-index: 2;
+/* 	accent-color: #eee; */
+}
+.note-date{
+	margin:0;
+}
+</style>
+<div class="email-app">
+	<div class="left-part">
+		<a class="ri-menu-fill ri-close-fill btn btn-success show-left-part d-block d-md-none" href="javascript:void(0)"></a>
+		<div class="scrollable" style="height: 100%">
+			<div class="p-3">
+				<h4>클라우드</h4>
+				<a id="uploadFile" class="waves-effect waves-light btn btn-danger d-block" href="#" >파일 업로드</a>
+			</div>
+			<div style="margin: 10px;">
+				<div>
+					<h5>클라우드 용량</h5>
+					<div class="progress" style="height: 18px; margin-bottom:10px">
+						<div class="progress-bar bg-success" style="width: 15%;" role="progressbar">15%</div>
+					</div>
+						<span style="text-align:right">사용량 <strong style="color:#0bb7af">1500MB</strong> / 10.0GB</span>
+				</div>
+				<br>
+				<!-- ============================= Accordion============================ -->
+				<div class="accordion accordion-flush" id="accordionFlushExample">
+					<div class="accordion-item">
+						<h2 class="accordion-header" id="flush-headingOne">
+							<button class="accordion-button collapsed" type="button"
+								data-bs-toggle="collapse" data-bs-target="#flush-collapseOne" 
+								aria-expanded="false" aria-controls="flush-collapseOne">부서자료실</button>
+						</h2>
+						<div id="flush-collapseOne" class="accordion-collapse collapse"
+							aria-labelledby="flush-headingOne" data-bs-parent="#accordionFlushExample">
+							<div class="accordion-body">
+								<!-- 여기도 foreach로 부서 자료실 목록 가져오기 -->
+								<p>2022년 프로젝트 자료실</p>
+								<p>2023년 프로젝트 자료실</p>
+							</div>
+						</div>
+					</div>
+					<div class="accordion-item">
+						<h2 class="accordion-header" id="flush-headingTwo">
+							<button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#flush-collapseTwo" 
+							aria-expanded="false" aria-controls="flush-collapseTwo">개인 자료실</button>
+						</h2>
+						<div id="flush-collapseTwo" class="accordion-collapse collapse" aria-labelledby="flush-headingTwo" data-bs-parent="#accordionFlushExample">
+							<div class="accordion-body">
+							<!-- 여기도 foreach 사용해서 개인 자료실 목록 가져오기 -->
+								<p>내 문서</p>
+								<p>내 그림</p>
+							</div>
+						</div>
+					</div>
+				</div>
+				<!-- ============================= Accordion============================ -->
+			</div>
+		</div>
+	</div>
+	<div class="right-part mail-list bg-white" style="overflow-y: auto; overflow-x: hidden;">
+		<div class="p-3 b-b">
+			<div class="d-flex align-items-center">
+				<div>
+					<h4>클라우드</h4>
+					<span id="menuBar"><a href="/cloud/home?empNo=${SessionInfo.empNo }">Home</a> > <a id="depUrl" href="/cloud/depCloud?depCode=">부서 자료실</a></span>
+				</div>
+			</div>
+		</div>
+				<!-- ============================================================================================ -->
+		<div class="bg-light p-3 d-md-flex align-items-center">
+			<div class="btn-group mt-1 mb-1">
+				<div class="form-check">
+					<input type="checkbox" class="form-check-input sl-all" id="cstall" />
+					<label class="form-check-label" for="cstall">Check All</label>
+				</div>
+			</div>
+			<div class="ms-auto">
+				<div class="btn-group me-2" role="group"
+					aria-label="Button group with nested dropdown">
+					<button type="button" class="btn btn-outline-secondary fs-5" id="refreshBtn">
+						<i class="bi-arrow-clockwise"></i>
+					</button>
+					<button type="button" class="btn btn-outline-secondary fs-5" id="delBtn">
+						<i class="ri-delete-bin-7-fill"></i>
+					</button>
+				</div>
+				<div class="btn-group me-2" role="group" aria-label="Button group with nested dropdown">
+					<div class="btn-group" role="group">
+						<button id="btnGroupDrop1" type="button"
+							class="btn btn-outline-secondary dropdown-toggle"
+							data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+							<i class="ri-folder-fill fs-5"></i>
+						</button>
+						<div class="dropdown-menu" aria-labelledby="btnGroupDrop1">
+							<div class="dropdown-item" id="downloadFol">파일(zip) 다운로드</div>
+							<div class="dropdown-item" id="createFlo">폴더 생성</div>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+		<!-- ============================================================================================ -->
+		<div class="container-fluid note-has-grid">
+			<div class="tab-content" id="tabContent">
+				<input type="hidden" id="depCloCode" value="${depFolderList[0].cloCode }">
+				<div id="note-full-container" class="note-has-grid row">
+				<!-- =====================================[ card body ]===================================== -->
+				<c:forEach items="${depFolderList }" var="folderList" varStatus="stat">
+					<!--=========================================[ 부서 최상위 자료실 (depth:1) ]================================================  -->
+					<c:if test="${empty folderList.folParcode}">
+						<div class="col-md-4 single-note-item all-category cloudCard1">
+							<input class="ckBox" type="checkbox" style="display:none;" value="${stat.count }">
+							<div class="card card-body cardBody" onclick="f_cardBody(this)" data-fol="${folderList.folCode }">
+								<span class="side-stick"></span>
+								<h5 class="note-title text-truncate w-75 mb-0" data-noteHeading="Book">
+									${folderList.folName }
+								</h5>
+								<div></div>
+								<input type="hidden" value="${folderList.folCode }" class="hiddenFolCode">
+								<p class="note-date fs-2 text-muted"> <fmt:formatDate value="${folderList.folDate }"/></p>
+								<div class="note-content ckbox" id="basicFolder">
+									<img src="${pageContext.request.contextPath }/resources/images/folder(2).png" id="folderIcon">
+								</div>
+								<div class="d-flex align-items-center">
+									<a href="javascript:void(0)" class="link me-1">
+										<i class="ri-star-line fs-5 favourite-note"></i>
+									</a> 
+									<a href="javascript:void(0)" class="link text-danger ms-2">
+										<i class="ri-delete-bin-line fs-5 remove-note"></i>
+									</a>
+								</div>
+							</div>
+						</div>
+					</c:if>
+					<!--=========================================[ 부서 최상위 자료실 (depth:1) ]================================================  -->
+					<!--=========================================[ 부서 하위 자료실 (depth:2) ]================================================  -->
+						<c:if test="${not empty folderList.folParcode}">
+							<input class="ckBox" type="checkbox" style="display:none">
+							<div class="col-md-4 single-note-item all-category cloudCard" style="display:none">
+								<div class="card card-body" onclick="f_cardBodyChild(this)">
+									<span class="side-stick"></span>
+									<h5 class="note-title text-truncate w-75 mb-0" data-noteHeading="Book">
+										${folderList.folName }
+									</h5>
+									<div></div>
+									<input type="hidden" value="${folderList.folParcode }" class="hiddenCloCode">
+									<input type="hidden" value="${folderList.folCode }" class="hiddenFolCode">
+									<p class="note-date fs-2 text-muted"><fmt:formatDate value="${folderList.folDate }"/></p>
+									<div class="note-content ckbox" id="basicFolder">
+										<img src="${pageContext.request.contextPath }/resources/images/folder(2).png" id="folderIcon">
+									</div>
+									<div class="d-flex align-items-center">
+										<a href="javascript:void(0)" class="link me-1">
+											<i class="ri-star-line fs-5 favourite-note"></i>
+										</a> 
+										<a href="javascript:void(0)" class="link text-danger ms-2">
+											<i class="ri-delete-bin-line fs-5 remove-note"></i>
+										</a>
+									</div>
+								</div>
+							</div>
+						</c:if>
+					<!--=========================================[ 부서 하위 자료실 (depth:2) ]================================================  -->
+				</c:forEach>
+				<!-- ===================================== card body ===================================== -->
+<!-- 					<div class="col-md-4 single-note-item all-category note-important"> -->
+<!-- 						<div class="card card-body"> -->
+<!-- 							<span class="side-stick"></span> -->
+<!-- 							<h5 class="note-title text-truncate w-75 mb-0" data-noteHeading="Go for lunch"> -->
+<!-- 								개인 자료실 -->
+<!-- 							</h5> -->
+<!-- 							<input class="ckBox" type="checkbox" style="display:none"> -->
+<!-- 							<p class="note-date fs-2 text-muted">2023-04-25</p> -->
+<!-- 							<div class="note-content ckbox"> -->
+<%-- 								<img src="${pageContext.request.contextPath }/resources/images/folder(2).png" id="folderIcon"> --%>
+<!-- 							</div> -->
+<!-- 							<div class="d-flex align-items-center"> -->
+<!-- 								<a href="javascript:void(0)" class="link me-1"> -->
+<!-- 									<i class="ri-star-line fs-5 favourite-note"></i> -->
+<!-- 								</a>  -->
+<!-- 								<a href="javascript:void(0)" class="link text-danger ms-2"> -->
+<!-- 									<i class="ri-delete-bin-line fs-5 remove-note"></i> -->
+<!-- 								</a> -->
+<!-- 							</div> -->
+<!-- 						</div> -->
+<!-- 					</div> -->
+				<!-- ===================================== card body ===================================== -->
+				</div>
+			</div>
+		</div>
+	</div>
+</div>
+<script type="text/javascript">
+$(function(){
+	var flag = true;
+	
+	$("#tabContent .cloudCard1").mouseover(function(){
+		$(this).find(".ckBox").css("display","block");
+	})
+	
+	$("#tabContent .cloudCard1").mouseout(function(){
+		if(flag){
+			$(this).find(".ckBox").attr("style", "display:none");
+		}else{
+			$(this).find(".ckBox").attr("style", "display:block");
+		}
+		
+	});
+	
+	$("#tabContent .cloudCard1").on("click", ".ckBox", function(){
+		if($(this).is(":checked")){
+			$(this).css("display","block");
+			flag = false;
+		}else{
+			flag = true;			
+		}
+	});
+	
+// 	$(".col-md-4").mouseover(function(){
+// 		console.log(this);
+// 		console.log("?? ", $(this).parent().children(".ckBox"));
+// 		$(this).parent().children(".ckBox").attr("style","display:block");
+// 	});
+	
+// 	$(".col-md-4").mouseout(function(){
+// 		$(".ckBox").attr("style", "display:none");
+// 	});
+	
+	let depCode = location.search; // depCode 값     :  ?depCode=depCode=DEP1
+	$("#depUrl").attr("href", "/cloud/depCloud"+depCode);
+	
+	$("#cstall").on("click", function(){
+		$(".ckBox").attr("style", "display:");
+		$(".ckBox").attr("checked",true);
+	});
+	
+	// ZIP 파일로 다운로드
+	$("#downloadFol").on("click", function(){
+		Swal.fire("파일 다운로드는 준비중입니다.","여기를 누르면 zip파일 다운로드 되게 할 예정!","info");
+	});
+	
+	// 삭제 버튼
+	$("#delBtn").on("click",function(){
+       	if(confirm("정말 삭제하시겠습니까?")){
+//        		$.ajax({
+//         	   type : "POST",
+//         	   url : "/sch/remove",
+//         	   data :param,
+//      	   	   dataType : "json",
+//                success : function(req){	
+//            	   }
+//        		});
+       		swal(title+"삭제되었습니다.", "", "success");
+   			location.reload();
+   			
+   		}	// if(confirm) end
+	});
+	
+	// 새로고침 버튼
+	$("#refreshBtn").on("click", function(){
+		location.reload();
+	});
+	
+	// 폴더 생성
+	$("#createFlo").on("click", function(){
+// 		alert("폴더 생성 클릭!!");
+		
+		let htmlStr = `
+			<input class="ckBox" type="checkbox" style="display:none">
+			<div class="col-md-4 single-note-item all-category note-important"> 
+			 <div class="card card-body">
+			 	<span class="side-stick"></span>
+			 	<div style="display:inline">
+		 			<input type="text" id="NewFolName" placeholder="새 폴더" style="width:100px;">
+			 		<input type="button" class="btn btn-danger" id="createBtn" value="생성" style="width: 60px; height: 30px">
+			 	</div>
+			 	<input class="ckBox" type="checkbox" style="display:none"> 
+			 	<div class="note-content ckbox"> 
+			 		<img src="${pageContext.request.contextPath }/resources/images/folder(2).png" id="folderIcon"> 
+			 	</div>
+			 	<div class="d-flex align-items-center"> 
+			 		<a href="javascript:void(0)" class="link me-1"> 
+			 			<i class="ri-star-line fs-5 favourite-note"></i> 
+			 		</a>  
+			 		<a href="javascript:void(0)" class="link text-danger ms-2"> 
+			 			<i class="ri-delete-bin-line fs-5 remove-note"></i> 
+			 		</a> 
+			 	</div> 
+			 </div> 
+			</div> 
+	   `		
+		$("#note-full-container").html($("#note-full-container").html() + htmlStr);
+		
+	   
+// 	   var fcEventEle = document.getElementsByClassName("fc-event");
+	   var cardFolder = document.getElementsByClassName("col-md-4");
+	   var cloCode;								// 클라우드 코드
+	   
+	   for(var i=0; i < cardFolder.length; i++){
+		   if(cardFolder[i].style.display == "inline-block"){
+// 				console.log( "hiddenCloCode : ", cardFolder[i].children[0].children[2].value);			   
+			   cloCode = cardFolder[i].children[0].children[2].value;
+		   }
+	   };
+	   
+	   $("#createBtn").on("click",function(){
+		   var folName = $("#NewFolName").val();	// 새로 생성하는 폴더 이름
+			console.log("파라미터 확인 : ", $('#depCloCode').val(), "// 폴더 이름 : ", folName);
+		   
+ 			//상위 폴더인 경우 (folParcode가 null)
+// 			if(){
+// 				var param = {
+// 					cloCode : ,	// 클라우드 코드
+// 					folName : 	// 폴더명
+// 				}
+// 			}
+			
+			//하위 폴더인 경우
+// 			var param = {
+// 				cloCode    : $("#depCloCode").value,	// 클라우드 코드(CLO06)
+// 				folParcode : cloCode,  // 상위폴더 코드
+// 				folName    : folName,  // 폴더명
+// 			}
+// 			$.ajax({
+// 				type 	 : "post",
+// 				url  	 : "/cloud/createFolder",
+// 				data 	 : param,
+// 				dataType : "json",
+// 				success	 : function(){
+					
+// 				}
+// 			});
+	   });	// createBtn end(폴더 생성 버튼)
+	   
+	});
+	
+});
+	// 상위 폴더의 hiddenFolCode == 하위 폴더의 hiddenCloCode를 찾아서 보여주기(display:inline-block으로 바꾸기)!!
+	function f_cardBody(p_this){
+		const schCode = p_this.dataset.fol;
+
+		const hiddenFolsCode = document.querySelectorAll(".hiddenFolCode");
+		const hiddenCloCode = document.querySelectorAll(".hiddenCloCode");
+		
+		console.log(p_this.children[1].innerHTML.trim());
+		
+		$("#menuBar").html("<a href='/cloud/home?empNo=${SessionInfo.empNo }'>Home</a> > <a id='depUrl' href='/cloud/depCloud"+location.search+"'>부서 자료실</a> > <a href='#' onclick='test(this)'>"+ p_this.children[1].innerHTML.trim() +"</a>");
+		console.log("menu 값 : ", $("#menuBar").html());
+		
+		for(let i=0; i<hiddenCloCode.length; i++){
+			console.log("cloCode 값 확인 : ", hiddenCloCode[i].value, "// schCode : ", schCode);
+			$(".cloudCard1").attr("style", "display:none");
+			if(hiddenCloCode[i].value == schCode){
+				hiddenCloCode[i].parentElement.parentElement.style.display="inline-block";
+// 				console.log(hiddenCloCode[i].parentElement);	// 프로젝트1, 프로젝트2, 프로젝트3
+			}
+		}
+	}	
+	
+	function test(e){
+		var elm = document.querySelector("#tabContent .cardBody");
+		f_cardBodyChild(elm, 'head');
+	}
+	
+	// 상위 폴더의 hiddenFolCode == 하위 폴더의 hiddenCloCode를 찾아서 보여주기(display:inline-block으로 바꾸기)!!
+	function f_cardBodyChild(p_this, cate){
+// 		console.log("this : ",  p_this);
+		const parCode = p_this.parentElement.querySelector(".hiddenFolCode").value;
+		const hiddenFolCode = document.querySelectorAll(".hiddenFolCode");
+		const hiddenClosCode = document.querySelectorAll(".hiddenCloCode");
+		console.log("parCode : ", parCode)
+		
+		$(".cloudCard").css("display","none");
+		
+		var suffix = "";
+		if(cate == 'head'){
+			var splitText = $("#menuBar").html().split(" &gt; ");
+			suffix = splitText[0] + " > " + splitText[1] + " > " + splitText[2];
+			$("#menuBar").html(suffix);
+		}else{
+			suffix = " > <a href=#>"+ p_this.children[1].innerHTML.trim() +"</a>";
+			$("#menuBar").append(suffix);
+		}
+		console.log("폴더 이름 : " , p_this.children[1].innerHTML.trim());
+		console.log("menu 값1 : ", $("#menuBar").html());
+		
+		for(let i=0; i < hiddenClosCode.length; i++){
+			const fileName = hiddenClosCode[i].parentElement.children[1].innerHTML.trim();
+			console.log("chk [i] : ", hiddenClosCode[i].parentElement.children[6].children[0]);
+			
+			if(hiddenClosCode[i].value == parCode){
+				hiddenClosCode[i].parentElement.parentElement.style.display="inline-block";
+				console.log("폴더 : ", hiddenClosCode[i].parentElement.children[1]);
+				console.log("폴더 이름 : ", hiddenClosCode[i].parentElement.children[1].innerHTML.trim());
+				
+				console.log("확장자 : ", fileName.split(".")[1]);
+				
+				if(fileName.split(".")[1] == "hwp"){	// 파일이 한글 파일인 경우
+					hiddenClosCode[i].parentElement.children[6].children[0].src = "${pageContext.request.contextPath }/resources/images/hwp.png";
+					hiddenClosCode[i].parentElement.children[6].children[0].style.width = "90px";
+					
+					// 여기서 온클릭 이벤트를 막고싶은데 어떻게 하는거죠??? 
+// 					event.stopPropagation();
+// 					event.returnValue = false;
+					event.preventDefault();
+				}
+				if(fileName.split(".")[1] == "xlsx"){	// 파일이 엑셀 파일인 경우
+					hiddenClosCode[i].parentElement.children[6].children[0].src =  "${pageContext.request.contextPath }/resources/images/xlsx.png";
+					hiddenClosCode[i].parentElement.children[6].children[0].style.width = "90px";
+				}
+				if(fileName.split(".")[1] == "docx"){	// 파일이 워드 파일인 경우
+					hiddenClosCode[i].parentElement.children[6].children[0].src = "${pageContext.request.contextPath }/resources/images/docx.png";
+					hiddenClosCode[i].parentElement.children[6].children[0].style.width = "90px";
+				}
+				if(fileName.split(".")[1] == "pdf"){	// 파일이 pdf 파일인 경우
+					hiddenClosCode[i].parentElement.children[6].children[0].src = "${pageContext.request.contextPath }/resources/images/pdf.png";
+					hiddenClosCode[i].parentElement.children[6].children[0].style.width = "90px";
+				}
+				if(fileName.split(".")[1] == "pptx"){	// 파일이 ppt 파일인 경우
+					hiddenClosCode[i].parentElement.children[6].children[0].src = "${pageContext.request.contextPath }/resources/images/ppt.png";
+					hiddenClosCode[i].parentElement.children[6].children[0].style.width = "90px";
+				}
+// 				console.log("사진 바뀌니?? : ", p_this.children[6].children);
+			}				
+		}
+
+
+		/*
+		for(let i=0; i < hiddenClosCode.length; i++){
+			console.log("chk [i] : ", hiddenClosCode[i].value);
+			for(let j=0; j < hiddenFolCode.length; j++){
+				console.log("chk [j] : ", hiddenFolCode[j].value);
+				
+				if(hiddenFolCode[j].value == hiddenClosCode[i].value){
+					hiddenClosCode[i].parentElement.parentElement.style.display="inline-block";
+				}
+				
+			}
+		}
+		*/
+		
+	}
+</script>

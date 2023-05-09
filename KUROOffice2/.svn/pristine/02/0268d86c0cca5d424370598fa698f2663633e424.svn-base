@@ -1,0 +1,74 @@
+package kr.or.ddit.mail.service;
+
+
+import java.util.ArrayList;
+import java.util.List;
+
+import javax.inject.Inject;
+
+import org.springframework.stereotype.Service;
+
+import kr.or.ddit.contact.vo.ContactVO;
+import kr.or.ddit.employee.vo.EmployeeVO;
+import kr.or.ddit.mail.vo.MailVO;
+import kr.or.ddit.mapper.ContactMapper;
+import kr.or.ddit.mapper.EmployeeMapper;
+import kr.or.ddit.mapper.MailMapper;
+import lombok.extern.slf4j.Slf4j;
+
+@Slf4j
+@Service
+public class MailServiceImpl implements IMailService{
+	
+	@Inject
+	private MailMapper mailMapper;
+	
+	@Inject
+	private EmployeeMapper empMapper;
+	
+	@Inject
+	private ContactMapper contactMapper;
+
+
+	@Override
+	public List<MailVO> getMailList() {
+
+		return mailMapper.getMailList();
+	}
+
+	//메일 EmpList 갖고 오기.
+	@Override
+	public List<EmployeeVO> getEmpByMailList(List<MailVO> receiveList) {
+		
+		List<EmployeeVO> empList = new ArrayList<EmployeeVO>();
+		
+		for (int i = 0; i < receiveList.size(); i++) {
+			EmployeeVO empVO = new EmployeeVO();
+			
+			String empNo = receiveList.get(i).getEmpNo();
+			empVO.setEmpNo(empNo);
+			
+			empVO = empMapper.getEmp(empVO);
+			empList.add(empVO);
+			
+		}
+		
+		return empList;
+	}
+
+	@Override
+	public List<MailVO> selectSendList(String empNo) {
+		// TODO Auto-generated method stub
+		return mailMapper.selectSendList(empNo);
+	}
+
+	@Override
+	public List<ContactVO> getContactList() {
+
+		return contactMapper.getContactList();
+	}
+	
+
+	
+
+}

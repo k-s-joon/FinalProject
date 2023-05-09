@@ -1,0 +1,25 @@
+package kr.or.ddit.mapper;
+
+import java.util.List;
+
+import kr.or.ddit.free.vo.FreeVO;
+import kr.or.ddit.good.vo.GoodVO;
+
+public interface GoodMapper {
+
+	public List<GoodVO> getGood(String goodType);
+
+	public List<GoodVO> getGoodByFree(FreeVO freeVO);
+
+	public List<GoodVO> getGoodList();
+
+	public List<GoodVO> goodList(String empNo);
+
+	//좋아요insert공지게시판
+	public void insertGood(GoodVO goodVO);
+
+	//좋아요insert자유게시판
+	public void insertFree(GoodVO goodVO);
+
+	
+}

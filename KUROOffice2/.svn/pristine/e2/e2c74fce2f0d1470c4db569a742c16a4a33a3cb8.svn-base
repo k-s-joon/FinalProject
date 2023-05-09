@@ -1,0 +1,211 @@
+package kr.or.ddit.mail.controller;
+
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import javax.inject.Inject;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpSession;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
+import org.springframework.validation.annotation.Validated;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.ModelAttribute;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+
+import kr.or.ddit.contact.service.IContactService;
+import kr.or.ddit.contact.vo.ContactVO;
+import kr.or.ddit.employee.vo.EmployeeVO;
+import kr.or.ddit.mail.service.IMailService;
+import kr.or.ddit.mail.vo.MailVO;
+import lombok.extern.slf4j.Slf4j;
+
+@Slf4j
+@Controller
+@RequestMapping("/mail")
+public class mailController {
+
+	@Inject
+	private IMailService mailService;
+
+	// 보낸메일함
+	@GetMapping("/send")
+	public String send(HttpServletRequest req, String empNo, Model model) {
+		log.debug("no>>" + empNo);
+		
+		HttpSession session = req.getSession();
+		EmployeeVO empVO = (EmployeeVO) session.getAttribute("SessionInfo");
+		
+		List<MailVO> mailList = mailService.selectSendList(empNo);
+		model.addAttribute("mailList", mailList);
+		log.info("보낸 mailList"+ mailList);
+		
+		return "mail/send";
+	}
+
+	// 받은메일함List
+	@GetMapping("/recieveList")
+	public String MailRecieve(Model model) {
+
+		List<MailVO> receiveList = mailService.getMailList();
+		model.addAttribute("receiveList", receiveList);
+
+		List<EmployeeVO> empList = mailService.getEmpByMailList(receiveList);
+		model.addAttribute("empList", empList);
+
+		return "mail/recieveList";
+	}
+
+	// 메일 detail
+	@GetMapping("/detail")
+	public String detail(@ModelAttribute MailVO mailVO, Model model) {
+
+		return "mail/detail";
+	}
+
+	// 메일보내기 주소록
+	@GetMapping("/write")
+	public String write(@Validated MailVO mailVO, Model model) {
+		
+		List<ContactVO> contactList = mailService.getContactList();
+		model.addAttribute("contactList", contactList);
+		
+		return "mail/write";
+	}
+
+
+	// 메일 쓰레기통
+	@GetMapping("/trash")
+	public String trash(Model model) {
+		model.addAttribute("pageMain", "Mail");
+		model.addAttribute("pageDetail", "trash");
+		model.addAttribute("pageName", "휴지통");
+
+		return "mail/trash";
+	}
+
+	/*
+	 * @ResponseBody
+	 * 
+	 * @GetMapping("/totalCnt") public int totalCnt(String username) {
+	 * 
+	 * 
+	 * int totalMailCnt = mailService.totalMailCnt(username);
+	 * 
+	 * return totalMailCnt; }
+	 */
+	/*
+	 * @ResponseBody
+	 * 
+	 * @GetMapping("/unReadCnt") public int unReadCnt(String username) {
+	 * 
+	 * 
+	 * int unReadMailCnt = mailService.unReadMailCnt(username);
+	 * log.info("unReadMailCnt : " + unReadMailCnt);
+	 * 
+	 * return unReadMailCnt; }
+	 */
+
+//	메일쓰기의 주소록 ajax로 불러오기 위한 메소드
+	// @ResponseBody
+	// @GetMapping("/addrAjax")
+	/*
+	 * public List<ContactVO> addrAjax(@RequestParam(value = "searchType", required
+	 * = false) String searchType,
+	 * 
+	 * @RequestParam(value = "keyword", required = false) String keyword) {
+	 * log.info("searchType : " + searchType); log.info("keyword : " + keyword);
+	 * 
+	 * Map<String, String> map = new HashMap<String, String>(); map.put("empname",
+	 * empname); map.put("searchType", searchType); map.put("keyword", keyword);
+	 * 
+	 * log.info("map : " + map); List<ContactVO> addrList =
+	 * contactService.contactList(map); log.info("addrList : " + addrList);
+	 * 
+	 * return addrList; }
+	 */
+
+	// 메일쓰기의 주소록 체크된 값들 ajax로 비동처러리하는 메소드
+	/*
+	 * @ResponseBody
+	 * 
+	 * @PostMapping("/checkAddr") public List<String> checkAddr(@RequestBody AddrVO
+	 * addrVO) { log.info("1 addrVO : " + addrVO);
+	 * 
+	 * for (int addrNoArr : addrVO.getAddrNoArray()) { addrVO.setAddrNo(addrNoArr);
+	 * } log.info("2 addrVO : " + addrVO);
+	 * 
+	 * List<AddrVO> checkAddrList = addressService.checkAddr(addrVO);
+	 * log.info("checkAddrList : " + checkAddrList);
+	 * 
+	 * List<String> emlAddrList = new ArrayList<String>();
+	 * 
+	 * for (AddrVO addrList : checkAddrList) { log.info("addrList : " + addrList);
+	 * 
+	 * String emlAddr = addrList.getEmlAddr();
+	 * 
+	 * log.info("emlAddr : " + emlAddr);
+	 * 
+	 * emlAddrList.add(emlAddr); } log.info("emlAddrList :" + emlAddrList);
+	 * 
+	 * return emlAddrList; }
+	 */
+
+	// @ResponseBody
+//	produces : text로 ajax의 text로 맞춘거
+	// @RequestMapping(value = "/myEmail", produces = "text/plain; charset=utf-8")
+	/*
+	 * public ResponseEntity<String> myEmail() {
+	 * 
+	 * 
+	 * ContactVO contactVO = new ContactVO(); log.info("empname" + empname);
+	 * 
+	 * contactVO.setEmpNo(empname);
+	 * 
+	 * log.info("contactVO 1 :" + contactVO);
+	 * 
+	 * String getMyEmail = contactService.getMyEmail(contactVO);
+	 * 
+	 * log.info("contactVO 2 :" + contactVO); log.info("getMyEmail : " +
+	 * getMyEmail);
+	 * 
+	 * // String으로 getMyEmail을 리턴해도됨. 그땐 메소드 타입도 String으로 맞춰줘야함.
+	 * ResponseEntity<String> entity = new ResponseEntity<String>(getMyEmail,
+	 * HttpStatus.OK); return entity; }
+	 */
+
+	// 요청파라미터 : emlSndrNo=,
+	/*
+	 * @PostMapping("/writePost") public String writePost(@ModelAttribute MailVO
+	 * mailVO) { int result = this.mailService.writePost(mailVO);
+	 * 
+	 * log.info("result : " + result);
+	 * 
+	 * return "redirect:/mail/send";
+	 * 
+	 * }
+	 */
+
+	/*
+	 * @GetMapping("/check") public String check(Model model, @ModelAttribute MailVO
+	 * mailVO) { model.addAttribute("pageMain","Mail");
+	 * model.addAttribute("pageDetail","check");
+	 * model.addAttribute("pageName","메일 수신확인");
+	 * 
+	 * 
+	 * 
+	 * mailVO.setEmpNo(username);
+	 * 
+	 * List<MailVO> checkMailList = mailService.checkMail(mailVO);
+	 * log.info("checkMailList : " + checkMailList);
+	 * 
+	 * model.addAttribute("data",checkMailList);
+	 * 
+	 * return "mail/check"; }
+	 */
+
+}

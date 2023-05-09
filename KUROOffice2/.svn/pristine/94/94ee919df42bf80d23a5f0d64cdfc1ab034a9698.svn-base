@@ -1,0 +1,642 @@
+<%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
+<%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
+
+<!-- <script src="https://uicdn.toast.com/tui.date-picker/latest/tui-date-picker.min.js"></script> -->
+<!-- [CDN 설정 실시] -->
+<!-- <link rel="stylesheet" href="https://amsul.ca/pickadate.js/css/main.css"> -->
+<link rel="stylesheet" href="https://amsul.ca/pickadate.js/vendor/pickadate/lib/themes/default.css" id="theme_base">
+<link rel="stylesheet" href="https://amsul.ca/pickadate.js/vendor/pickadate/lib/themes/default.date.css" id="theme_date">
+<link rel="stylesheet" href="https://amsul.ca/pickadate.js/vendor/pickadate/lib/themes/default.time.css" id="theme_time">
+<style>
+.picker__select--month, .picker__select--year{
+	border: transparent;
+    padding: 0;
+}
+</style>
+<script src="https://code.jquery.com/jquery-latest.min.js"></script>
+
+<script src="https://amsul.ca/pickadate.js/vendor/pickadate/lib/picker.js"></script>
+<script src="https://amsul.ca/pickadate.js/vendor/pickadate/lib/picker.date.js"></script>
+<script src="https://amsul.ca/pickadate.js/vendor/pickadate/lib/picker.time.js"></script>
+<script type="text/javascript">
+
+let resList;
+
+$(function(){
+   
+	$.extend($.fn.pickadate.defaults, {
+        monthsFull: [ "1월","2월", "3월", "4월", "5월", "6월", "7월", "8월", "9월", "10월", "11월", "12월",],
+        monthsShort: [ "1월", "2월", "3월", "4월", "5월", "6월","7월", "8월", "9월", "10월", "11월", "12월",],
+        weekdaysFull: ["일", "월", "화", "수", "목", "금", "토"],
+        weekdaysShort: ["일", "월", "화", "수", "목", "금", "토"],
+        selectYears: 10,
+        selectMonths: true,
+        showMonthsShort: false,
+        showWeekdaysFull: false,
+        close: "닫기",
+        clear: false,
+        today: "오늘",
+        format: "yyyy-mm-dd",
+        formatSubmit: "yyyy-mm-dd",
+//         max: true, // 이 옵션이 ture면 오늘까지밖에 날짜 선택을 못한다
+        closeOnSelect: true,
+        onSet: function (e) {
+          if (e.select) {
+            this.close();
+          }
+        },
+      });
+   
+      testMain();
+   
+      ///////////////////// 여기가 예약 정보 불러오는 내용/////////////////////////////////
+      let temp = ${jsonMrres};
+    	  
+      console.log('temp',temp);
+      resList = [];
+      
+      for(let i=0; i<temp.length; i++){
+         resList.push(JSON.parse(temp[i]));
+      }      
+      
+      console.log("resList" , resList);
+//       console.log("resList 데이터 접근" , resList[0]['mrCode']);
+    	  
+     // pickadate를 수정했을 때 이 정보가 console에 뜨도록 해야하눈딩 어떻게 하는거지...
+     dataChk(temp);
+     
+
+      ///////////////////// 여기가 예약 정보 불러오는 내용/////////////////////////////////
+
+      
+   $("#timeSelect").on("change", function(){
+//       console.log("change...!");
+      var rmTime = $("#rmTime").text();
+      var rmTimeSplit = rmTime.trim().split("-");
+      var rmTimeSplitFirst = rmTimeSplit[0].split(":");
+      var rmTimeSplitSecond = rmTimeSplit[1].split(":");
+      var firstTime = parseInt(rmTimeSplitFirst);
+      var secondTime = parseInt(rmTimeSplitSecond);
+      
+      var times = "";
+      var firstTimes = firstTime + parseInt($(this).val());
+//       var secondTimes = secondTime + parseInt($(this).val());
+      
+      $("#rmTime").text(rmTimeSplit[0] + " - " + firstTimes + ":00");
+      
+   });
+   
+   // 날짜를 바꿧을 때 함수 실행   
+   $("#pickadate").on("change",function(){
+	//    alert("날짜 바뀜");
+	
+	   // 예약정보 초기화
+	   $('.room').attr('style', 'background-color:transparent'); 
+	   $('.room').empty(); 
+	   
+	   dataChk(temp);
+   });
+      
+   
+   $(".accordion-body").on("click", function(){
+	   location.href="/sch/resRoom";
+   })
+   
+   
+});
+
+	function dataChk(p_temp){
+		for(let i=0; i < p_temp.length; i++){
+			let date = resList[i]['schStart'].split('T')[0];		// 날짜 (2023-04-13)
+			let roomCode = resList[i]['mrCode'];					// 회의실 코드(MROOM1_101)
+			let startRTime = resList[i]['schStart'].split('T')[1];	// 시작시간 (09:00)
+			let endRTime = resList[i]['schEnd'].split('T')[1];		// 종료시간 (10:00)
+			
+// 			alert(typeof startRTime);
+			
+			let splitSTime = startRTime.split(':')[0];				// 시간(09)
+			let splitETime = endRTime.split(':')[0];				// 시간(10)
+			console.log("splitSTime : " , splitSTime);
+			
+// 			console.log("temp[",i,"] allDateList : ", resList[i]['schStart'].split('T')[0]);			// 날짜
+
+			if($('#pickadate').val() == date){
+				console.log("==========================================");
+				console.log("temp[",i,"] date : ", date);				// 날짜
+				console.log("temp[",i,"] startRTime : ", startRTime);	// 시작시간
+				console.log("temp[",i,"] endRTime : ", endRTime);		// 종료시간
+				
+// 				$("#timeTbl").find("td:eq("+ 4 +")").attr('id').split('-')[0]);	// 회의실 코드 (MROOM1_101)
+// 				$("#timeTbl").find("td:eq("+ 4 +")").attr('id').split('-')[1]);	// 시간 (09)
+				
+				let StartId = roomCode+"-"+splitSTime;
+				let EndId = roomCode+"-"+(parseInt(splitETime)-1);
+// 				alert("StartId : " + StartId + "EndId : " + EndId);
+				
+				
+// 				document.getElementById(StartId).prop("rowspan=3");
+				document.getElementById(StartId).innerHTML = '[ 예약 ]';
+				document.getElementById(StartId).style.backgroundColor = '#abbdd7';
+				document.getElementById(StartId).style.color = 'white';
+				
+// 				// 만약 3시간을 예약한 경우 중간 시간
+				if((parseInt(splitETime) - parseInt(splitSTime)) == 3){
+					let midId = roomCode+"-"+(parseInt(splitSTime) + 1);
+					console.log("midId : " , midId);
+					document.getElementById(midId).innerHTML = '[ 예약 ]';
+					document.getElementById(midId).style.backgroundColor = '#abbdd7';
+					document.getElementById(midId).style.color = 'white';
+				}
+				// 예약을 2시간 이상 한 경우 
+				if((parseInt(splitETime) - parseInt(splitSTime)) >= 2){
+					console.log("end : ", EndId)
+					document.getElementById(EndId).innerHTML = '[ 예약 ]';
+					document.getElementById(EndId).style.backgroundColor = '#abbdd7';
+					document.getElementById(EndId).style.color = 'white';
+				}
+
+// 				$(".room").each(function() {
+// 				  var rows = $(".room:contains('[ 예약 ]')");
+// 				  console.log("rows length 1 ", rows.length);
+// 				  if (rows.length > 1) {
+// 				    rows.eq(0).attr("rowspan", rows.length);
+// 				    rows.not(":eq(0)").remove();
+// 				  }
+// 				});
+				
+				
+				// console.log("id : ", document.getElementById.split("-")[0] );
+
+				console.log("temp[",i,"] : ", resList[i]['mrCode']);
+			}
+			
+		}		
+	}
+
+   function testMain(){
+      
+      let nowDate = new Date().toISOString().substring(0, 10);
+      $(".pickadate").attr("value", nowDate );
+      
+      $( '.datepicker' ).pickadate({
+          disablePicker: true
+      });
+      
+      // [타입 지정 및 초기화 실시]
+       $('.pickadate').pickadate();
+   //     $('.pickatime').pickatime();   
+   } 
+
+   const f_modal = function(e){   // 모달 오픈 함수
+
+	   console.log("e",$(e).text());
+	   
+	  let nodes = [...e.parentElement.children];
+      let index = nodes.indexOf(e);
+      
+      // 회의실 코드 (DB에 장소 저장시 회의실 코드 값으로 저장해야함)
+      let mrCode = e.parentElement.parentElement.parentElement.children[0].children[1].children[index].id;
+      $("#locaCode").val(mrCode);
+      
+      
+      //부모3자식0자식1자식index
+      let roomName = e.parentElement.parentElement.parentElement.children[0].children[1].children[index].innerHTML;
+      let resTime = e.parentElement.children[0].innerHTML;
+      
+//       alert('chk : '+ index + ", " + roomName + ", 시간 : " + resTime);
+      document.getElementById('rmName').innerHTML = roomName;
+      document.getElementById('rmTime').innerHTML = resTime;
+      
+      let resTimeSplit = resTime.trim().split("-");
+      let resTimeFirst = resTimeSplit[0].split(":");
+      if(parseInt(resTimeFirst) == 21){
+         document.querySelector("#timeSelect").style.display = "none";
+      }else{
+         document.querySelector("#timeSelect").style.display = "block";
+      }
+      
+	  // 예약된 회의실인 경우 모달오픈 막기
+	  if($(e).text() == '[ 예약 ]' ){
+		  $(".bckdrop").attr("style", "display:none;");
+	      $("#resModal").attr("style", "display:none;");
+	      alert("예약중인 회의실입니다.");
+	      
+	      // 여기서 수정, 삭제 처리
+	      
+	  }else{	// 예약 가능한 회의실인 경우 등록 모달 오픈
+	      $(".bckdrop").attr("style", "display:block; opacity:0.5;");
+	      $("#resModal").attr("style", "display:block; z-index:100; position:fixed; top:30%; left:40%; width:420px");
+	  }
+   }
+   
+   const closeBtn = function(){
+      $(".bckdrop").attr("style", "display:none");
+      $("#resModal").attr("style", "display:none");
+   }
+
+   const addBtn = function(e){      // 추가버튼
+      
+      let empNo = '${SessionInfo.empNo }';
+      let resName = $('.resModalTable').find('div:eq(0)').text();                     	 // 회의실 이름 (schLocation)
+      let resDate = $("input[name='_submit']").val()                             		 // 예약 일시
+      let resStart = $('.resModalTable').find('div:eq(1)').text().split("-")[0].trim()   // 예약 시간_시작일시 (schStart)
+      let resEnd = $('.resModalTable').find('div:eq(1)').text().split("-")[1].trim()     // 예약시간_종료일시(schEnd)
+      let selectTime = $('select[name=resTime]').val();                           		 // 이용시간
+      let resContent = $('#schContent').val();                                 			 // 이용 목적 (schContent)
+      let loca = $('#locaCode').val();
+      
+      let data = {
+                    'empNo'         : empNo,
+                    'schTitle'      : '[예약]',
+                    'schContent'    : resContent,
+                    'schStart'      : resDate+"T"+resStart,
+                    'schEnd'        : resDate+"T"+resEnd,
+                    'schLocation'   : loca,
+                    'schType'       : '회의실 예약',
+                    'schRead'       : 'N',
+                    'schColor'      : 'orange',
+                    'allDay'        : false
+         }
+      
+      $.ajax({
+            type : "POST",
+            url : "/sch/register",
+            data : JSON.stringify(data),
+            contentType: "application/json;charset=utf-8",
+            dataType:"text",
+                 success : function(res){
+//                     alert("일정이 추가되었습니다.");
+                    location.reload();
+                 }
+            
+           });
+//       console.log("selectTime : " + selectTime);
+//       console.log("resName : ", resName + ", resDate : " + resDate + ", resStart : " + resStart + ", resEnd : " + resEnd + ", resContent : " + resContent);
+   }
+   
+   
+</script>
+<style>
+li{
+	list-style:none;
+}
+tr{
+   height: 60px;
+}
+th{
+   width: 120px;
+}
+
+.modalTr .modalTd{
+/*    border: 1px solid #eee; */
+   padding: 5px;
+}
+
+#schContent{
+   border: 1px solid #eee;
+   border-radius: 5px;
+   width: 300px;
+   height: 50px;
+}
+a{
+	color : black;
+}
+</style>
+
+<div class="email-app">
+	<div class="left-part">
+	 <a class="ri-menu-fill ri-close-fill btn btn-success show-left-part d-block d-md-none" href="javascript:void(0)"></a>
+	 <div class="scrollable" style="height: 100%">
+	   <div class="p-3">
+	   		<h4>예약</h4>
+	   </div>
+		<div style="margin:10px;">	
+			<div>
+			    <h5><strong><a href="/sch/resRoom">회의실 예약</a></strong></h5>
+				<!-- =====회의실 예약 accordion=====  -->
+				<div class="accordion accordion-flush" id="accordionFlushExample">
+					<div class="accordion-item">
+						<h2 class="accordion-header" id="flush-headingOne">
+							<button class="accordion-button collapsed" type="button"
+								data-bs-toggle="collapse" data-bs-target="#flush-collapseOne" 
+								aria-expanded="false" aria-controls="flush-collapseOne">1층 회의실</button>
+						</h2>
+						<div id="flush-collapseOne" class="accordion-collapse collapse"
+							aria-labelledby="flush-headingOne" data-bs-parent="#accordionFlushExample">
+							<div class="accordion-body">
+								<p>101호 회의실 (정원 15명)</p>
+								<p>102호 회의실 (정원 20명)</p>
+								<p>103호 회의실 (정원 30명)</p>
+							</div>
+						</div>
+					</div>
+					<div class="accordion-item">
+						<h2 class="accordion-header" id="flush-headingTwo">
+							<button class="accordion-button collapsed" type="button"
+								data-bs-toggle="collapse" data-bs-target="#flush-collapseTwo" aria-expanded="false"
+								aria-controls="flush-collapseTwo">2층 회의실</button>
+						</h2>
+						<div id="flush-collapseTwo" class="accordion-collapse collapse"
+							aria-labelledby="flush-headingTwo" data-bs-parent="#accordionFlushExample">
+							<div class="accordion-body">
+								<p>301호 회의실 (정원 10명)</p>
+								<p>302호 회의실 (정원 15명)</p>
+								<p>303호 회의실 (정원 20명)</p>
+								<p>303호 회의실 (정원 50명)</p>
+							</div>
+						</div>
+					</div>
+				</div>	
+				<!-- =====회의실 예약 accordion=====  -->
+			</div>
+			<br>
+			<div>
+				<h5><strong><a href="/sch/room">임시페이지</a></strong></h5>
+				<h5><strong><a href="/sch/resCar">차량 예약</a></strong></h5>
+			</div>
+		</div>	
+	        
+	  </div>
+	</div>
+    <div class="right-part mail-list bg-white" style="overflow-y: auto; overflow-x: hidden;">
+	    <div class="p-3 b-b">
+	       <div class="d-flex align-items-center">
+		        <div>
+		            <h4>예약</h4>
+		            <span>Home > 회의실 예약</span>
+		        </div>
+<!-- 		        <div class="ms-auto"> -->
+<!-- 		           <input placeholder="Search Mail" id="" type="text" class="form-control" /> -->
+<!-- 		        </div> -->
+	       </div>
+	    </div>
+		<!-- 만약에 예약된 상태면 class이름에 를 추가 -->
+<!-- 		<div class="page-breadcrumb"> -->
+<!-- 		   <h4 class="page title">회의실 예약 </h4> -->
+<!-- 		</div> -->
+		<div class="container-fluid" style="text-align:center;">
+		   <div>
+		      <div class="input-group" style="height:50px; margin:20px;">
+		         <input type="date" value="" id="pickadate" class="pickadate" style="height: 50px; width: 96%; text-align: center; font-size: xx-large; margin: auto;"/>
+		      </div>
+		   </div>
+		   <div class="row" style="background-color: white; margin:10px; height: 1000px;">
+		      <div class="col-md-5" style="margin: 25px 10px;">
+		         <table class="table table-sm table-bordered reserv-table" id="timeTbl">
+		            <thead>
+		               <tr style="height: 30px;">
+		                  <th style="width: 5rem;">시간대</th>
+		                  <th colspan="5">본사 1층 회의실</th>
+		               </tr>
+		               <tr style="height: 50px;">
+		                  <th>구분</th>
+		                  <td id="MROOM1_101" style="background-color: #d2e0f5;">101호 회의실</td>
+		                  <td id="MROOM1_102" style="background-color: #d2e0f5;">102호 회의실</td>
+		                  <td id="MROOM1_103" style="background-color: #d2e0f5;">103호 회의실</td>
+		               </tr>
+		            </thead>
+		            <tbody>
+		               <tr>
+		                  <th>09:00 - 10:00</th>
+		                  <td class="room" id="MROOM1_101-09"onclick="f_modal(this)"></td>
+		                  <td class="room" id="MROOM1_102-09" onclick="f_modal(this)"></td>
+		                  <td class="room" id="MROOM1_103-09" onclick="f_modal(this)"></td>
+		               </tr>
+		               <tr>
+		                  <th>10:00 - 11:00</th>
+		                  <td class="room" id="MROOM1_101-10" onclick="f_modal(this)"></td>
+		                  <td class="room" id="MROOM1_102-10" onclick="f_modal(this)"></td>
+		                  <td class="room" id="MROOM1_103-10" onclick="f_modal(this)"></td>
+		               </tr>
+		               <tr>
+		                  <th>11:00 - 12:00</th>
+		                  <td class="room" id="MROOM1_101-11" onclick="f_modal(this)"></td>
+		                  <td class="room" id="MROOM1_102-11" onclick="f_modal(this)"></td>
+		                  <td class="room" id="MROOM1_103-11" onclick="f_modal(this)"></td>
+		               </tr>
+		               <tr>
+		                  <th>12:00 - 13:00</th>
+		                  <td class="room" id="MROOM1_101-12" onclick="f_modal(this)"></td>
+		                  <td class="room" id="MROOM1_102-12" onclick="f_modal(this)"></td>
+		                  <td class="room" id="MROOM1_103-12" onclick="f_modal(this)"></td>
+		               </tr>
+		               <tr>
+		                  <th>13:00 - 14:00</th>
+		                  <td class="room" id="MROOM1_101-13" onclick="f_modal(this)"></td>
+		                  <td class="room" id="MROOM1_102-13" onclick="f_modal(this)"></td>
+		                  <td class="room" id="MROOM1_103-13" onclick="f_modal(this)"></td>
+		               </tr>
+		               <tr>
+		                  <th>14:00 - 15:00</th>
+		                  <td class="room" id="MROOM1_101-14" onclick="f_modal(this)"></td>
+		                  <td class="room" id="MROOM1_102-14" onclick="f_modal(this)"></td>
+		                  <td class="room" id="MROOM1_103-14" onclick="f_modal(this)"></td>
+		               </tr>
+		               <tr>
+		                  <th>15:00 - 16:00</th>
+		                  <td class="room" id="MROOM1_101-15" onclick="f_modal(this)"></td>
+		                  <td class="room" id="MROOM1_102-15" onclick="f_modal(this)"></td>
+		                  <td class="room" id="MROOM1_103-15" onclick="f_modal(this)"></td>
+		               </tr>
+		               <tr>
+		                  <th>16:00 - 17:00</th>
+		                  <td class="room" id="MROOM1_101-16" onclick="f_modal(this)"></td>
+		                  <td class="room" id="MROOM1_102-16" onclick="f_modal(this)"></td>
+		                  <td class="room" id="MROOM1_103-16" onclick="f_modal(this)"></td>
+		               </tr>
+		               <tr>
+		                  <th>17:00 - 18:00</th>
+		                  <td class="room" id="MROOM1_101-17" onclick="f_modal(this)"></td>
+		                  <td class="room" id="MROOM1_102-17" onclick="f_modal(this)"></td>
+		                  <td class="room" id="MROOM1_103-17" onclick="f_modal(this)"></td>
+		               </tr>
+		               <tr>
+		                  <th>18:00 - 19:00</th>
+		                  <td class="room" id="MROOM1_101-18" onclick="f_modal(this)"></td>
+		                  <td class="room" id="MROOM1_102-18" onclick="f_modal(this)"></td>
+		                  <td class="room" id="MROOM1_103-18" onclick="f_modal(this)"></td>
+		               </tr>
+		               <tr>
+		                  <th>19:00 - 20:00</th>
+		                  <td class="room" id="MROOM1_101-19" onclick="f_modal(this)"></td>
+		                  <td class="room" id="MROOM1_102-19" onclick="f_modal(this)"></td>
+		                  <td class="room" id="MROOM1_103-19" onclick="f_modal(this)"></td>
+		               </tr>
+		               <tr>
+		                  <th>20:00 - 21:00</th>
+		                  <td class="room" id="MROOM1_101-20" onclick="f_modal(this)"></td>
+		                  <td class="room" id="MROOM1_102-20" onclick="f_modal(this)"></td>
+		                  <td class="room" id="MROOM1_103-20" onclick="f_modal(this)"></td>
+		               </tr>
+		               <tr>
+		                  <th>21:00 - 22:00</th>
+		                  <td class="room" id="MROOM1_101-21" onclick="f_modal(this)"></td>
+		                  <td class="room" id="MROOM1_102-21" onclick="f_modal(this)"></td>
+		                  <td class="room" id="MROOM1_103-21" onclick="f_modal(this)"></td>
+		               </tr>
+		            </tbody>
+		         </table>
+		      </div>
+		      <div class="col-md-6" style="margin: 25px 10px;">
+		         <table class="table table-sm table-bordered reserv-table">
+		            <thead>
+		               <tr style="height: 30px;">
+		                  <th style="width: 5rem;">시간대</th>
+		                  <th colspan="4">본사 3층 회의실</th>
+		               </tr>
+		               <tr style="height: 50px;">
+		                  <th>구분</th> 
+		                  <td id="MROOM3_301" style=" background-color: #d2e0f5;">301호 회의실</td>
+		                  <td id="MROOM3_302" style=" background-color: #d2e0f5;">302호 회의실</td>
+		                  <td id="MROOM3_303" style=" background-color: #d2e0f5;">303호 회의실</td>
+		                  <td id="MROOM3_304" style=" background-color: #d2e0f5;">304호 회의실</td>
+		               </tr>
+		            </thead>
+		            <tbody>
+		               <tr>
+		                  <th>09:00 - 10:00</th>
+		                  <td class="room" id="MROOM3_301-09" onclick="f_modal(this)"></td>
+		                  <td class="room" id="MROOM3_302-09" onclick="f_modal(this)"></td>
+		                  <td class="room" id="MROOM3_303-09" onclick="f_modal(this)"></td>
+		                  <td class="room" id="MROOM3_304-09" onclick="f_modal(this)"></td>
+		               </tr>
+		               <tr>
+		                  <th>10:00 - 11:00</th>
+		                  <td class="room" id="MROOM3_301-10" onclick="f_modal(this)"></td>
+		                  <td class="room" id="MROOM3_302-10" onclick="f_modal(this)"></td>
+		                  <td class="room" id="MROOM3_303-10" onclick="f_modal(this)"></td>
+		                  <td class="room" id="MROOM3_304-10" onclick="f_modal(this)"></td>
+		               </tr>
+		               <tr>
+		                  <th>11:00 - 12:00</th>
+		                  <td class="room" id="MROOM3_301-11" onclick="f_modal(this)"></td>
+		                  <td class="room" id="MROOM3_302-11" onclick="f_modal(this)"></td>
+		                  <td class="room" id="MROOM3_303-11" onclick="f_modal(this)"></td>
+		                  <td class="room" id="MROOM3_304-11" onclick="f_modal(this)"></td>
+		               </tr>
+		               <tr>
+		                  <th>12:00 - 13:00</th>
+		                  <td class="room" id="MROOM3_301-12" onclick="f_modal(this)"></td>
+		                  <td class="room" id="MROOM3_302-12" onclick="f_modal(this)"></td>
+		                  <td class="room" id="MROOM3_303-12" onclick="f_modal(this)"></td>
+		                  <td class="room" id="MROOM3_304-12" onclick="f_modal(this)"></td>
+		               </tr>
+		               <tr>
+		                  <th>13:00 - 14:00</th>
+		                  <td class="room" id="MROOM3_301-13" onclick="f_modal(this)"></td>
+		                  <td class="room" id="MROOM3_302-13" onclick="f_modal(this)"></td>
+		                  <td class="room" id="MROOM3_303-13" onclick="f_modal(this)"></td>
+		                  <td class="room" id="MROOM3_304-13" onclick="f_modal(this)"></td>
+		               </tr>
+		               <tr>
+		                  <th>14:00 - 15:00</th>
+		                  <td class="room" id="MROOM3_301-14" onclick="f_modal(this)"></td>
+		                  <td class="room" id="MROOM3_302-14" onclick="f_modal(this)"></td>
+		                  <td class="room" id="MROOM3_303-14" onclick="f_modal(this)"></td>
+		                  <td class="room" id="MROOM3_304-14" onclick="f_modal(this)"></td>
+		               </tr>
+		               <tr>
+		                  <th>15:00 - 16:00</th>
+		                  <td class="room" id="MROOM3_301-15" onclick="f_modal(this)"></td>
+		                  <td class="room" id="MROOM3_302-15" onclick="f_modal(this)"></td>
+		                  <td class="room" id="MROOM3_303-15" onclick="f_modal(this)"></td>
+		                  <td class="room" id="MROOM3_304-15" onclick="f_modal(this)"></td>
+		               </tr>
+		               <tr>
+		                  <th>16:00 - 17:00</th>
+		                  <td class="room" id="MROOM3_301-16" onclick="f_modal(this)"></td>
+		                  <td class="room" id="MROOM3_302-16" onclick="f_modal(this)"></td>
+		                  <td class="room" id="MROOM3_303-16" onclick="f_modal(this)"></td>
+		                  <td class="room" id="MROOM3_304-16" onclick="f_modal(this)"></td>
+		               </tr>
+		               <tr>
+		                  <th>17:00 - 18:00</th>
+		                  <td class="room" id="MROOM3_301-17" onclick="f_modal(this)"></td>
+		                  <td class="room" id="MROOM3_302-17" onclick="f_modal(this)"></td>
+		                  <td class="room" id="MROOM3_303-17" onclick="f_modal(this)"></td>
+		                  <td class="room" id="MROOM3_304-17" onclick="f_modal(this)"></td>
+		               </tr>
+		               <tr>
+		                  <th>18:00 - 19:00</th>
+		                  <td class="room" id="MROOM3_301-18" onclick="f_modal(this)"></td>
+		                  <td class="room" id="MROOM3_302-18" onclick="f_modal(this)"></td>
+		                  <td class="room" id="MROOM3_303-18" onclick="f_modal(this)"></td>
+		                  <td class="room" id="MROOM3_304-18" onclick="f_modal(this)"></td>
+		               </tr>
+		               <tr>
+		                  <th>19:00 - 20:00</th>
+		                  <td class="room" id="MROOM3_301-19" onclick="f_modal(this)"></td>
+		                  <td class="room" id="MROOM3_302-19" onclick="f_modal(this)"></td>
+		                  <td class="room" id="MROOM3_303-19" onclick="f_modal(this)"></td>
+		                  <td class="room" id="MROOM3_304-19" onclick="f_modal(this)"></td>
+		               </tr>
+		               <tr>
+		                  <th>20:00 - 21:00</th>
+		                  <td class="room" id="MROOM3_301-20" onclick="f_modal(this)"></td>
+		                  <td  class="room" id="MROOM3_302-20" onclick="f_modal(this)"></td>
+		                  <td class="room" id="MROOM3_303-20" onclick="f_modal(this)"></td>
+		                  <td class="room" id="MROOM3_304-20" onclick="f_modal(this)"></td>
+		               </tr>
+		               <tr>
+		                  <th>21:00 - 22:00</th>
+		                  <td class="room" id="MROOM3_301-21" onclick="f_modal(this)"></td>
+		                  <td class="room" id="MROOM3_302-21" onclick="f_modal(this)"></td>
+		                  <td class="room" id="MROOM3_303-21" onclick="f_modal(this)"></td>
+		                  <td class="room" id="MROOM3_304-21" onclick="f_modal(this)"></td>
+		               </tr>
+		            </tbody>
+		         </table>
+		      </div>
+		   </div>
+		</div>
+	</div>
+</div>
+<!-- =====================[ 회의실 예약 모달 ]=================================-->
+<div class="bckdrop" style="display:none;"></div>
+<div class="modal" id="resModal" data-bs-backdrop="static"  role="dialog" style="display: none;">
+   <div class="modal-content">
+      <div class="modal-header">
+         <h4>회의실 예약</h4>
+         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close" onclick="closeBtn()"></button>
+      </div> 
+      <div class="modal-body" id="modalBody" style="height: 250px; width: 420px;">
+         <table class="resModalTable" style="padding:5px; border-collapse: collapse;">
+            <thead>[회의실 예약 정보]</thead>
+            <tbody style="margin:3px;">
+               <tr class="modalTr">
+                  <td class="modalTd">예약 호실</td>
+                  <td class="modalTd">
+                     <div id ="rmName"style="float:left; width: 70%;">회의실 이름</div>
+                     <input type="hidden" id="locaCode" value="">
+                  </td>
+               </tr>
+               <tr class="modalTr">
+                  <td class="modalTd">예약 시간</td>
+                  <td class="modalTd">
+                     <div id="rmTime" style="float:left; width: 40%; ">예약시간</div>
+                     <select name="resTime" style="float:right;" id="timeSelect">
+<!--                         <option selected>이용 시간 선택</option> -->
+                        <option value="1">1시간</option>
+                        <option value="2">2시간</option>
+                        <option value="3">3시간</option>
+                     </select>
+                  </td>
+               </tr>
+               <tr class="modalTr">
+                  <td class="modalTd">이용 목적</td>
+                  <td class="modalTd">
+                     <input type="text" id="schContent" name="schContent" value="">
+                  </td>
+               </tr>
+            </tbody>
+         </table>
+      </div>
+      <div class="modal-footer">
+         <button type="button" class="btn btn-warning" id="addBtn" onclick="addBtn(this)">추가</button>
+         <button type="button" class="btn btn-warning" id="addBtn" style="display:none" onclick="modBtn(this)">수정</button>
+         <button type="button" class="btn btn-delete" id="delBtn" style="display: none" onclick="">삭제</button>
+         <button type="button" class="btn btn-secondary" data-dismiss="modal" id="CloseBtn" onclick="closeBtn()">취소</button>
+      </div>   
+   </div>
+</div>
+<!-- =====================[ 회의실 예약 모달 ]=================================-->

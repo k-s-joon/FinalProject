@@ -1,0 +1,108 @@
+package kr.or.ddit.notice.service;
+
+import java.util.ArrayList;
+import java.util.List;
+
+import javax.inject.Inject;
+
+import org.springframework.stereotype.Service;
+
+import kr.or.ddit.common.vo.ComCodeVO;
+import kr.or.ddit.employee.vo.EmployeeVO;
+import kr.or.ddit.free.vo.FreeVO;
+import kr.or.ddit.good.vo.GoodVO;
+import kr.or.ddit.mapper.AttfileMapper;
+import kr.or.ddit.mapper.ComCodeMapper;
+import kr.or.ddit.mapper.EmployeeMapper;
+import kr.or.ddit.mapper.GoodMapper;
+import kr.or.ddit.mapper.NoticeMapper;
+import kr.or.ddit.notice.vo.NoticeVO;
+import lombok.extern.slf4j.Slf4j;
+
+@Slf4j
+@Service
+public class NoticeServiceImpl implements INoticeService {
+	
+	@Inject
+	private NoticeMapper noticeMapper;
+	
+	@Inject
+	private EmployeeMapper empMapper;
+	
+	@Inject
+	private AttfileMapper afMapper;
+	
+	@Inject
+	private GoodMapper goodMapper;
+	
+	@Inject
+	private ComCodeMapper ccMapper;
+	
+	@Override
+	public List<NoticeVO> getNoticeList() {
+		return noticeMapper.getNoticeList();
+	}
+
+	@Override
+	public List<EmployeeVO> getEmpByNoticeList(List<NoticeVO> noticeList) {
+		List<EmployeeVO> empList = new ArrayList<EmployeeVO>();
+		
+		for (int i = 0; i < noticeList.size(); i++) {
+			EmployeeVO empVO = new EmployeeVO();
+			
+			String empNo = noticeList.get(i).getEmpNo();
+			empVO.setEmpNo(empNo);
+			
+			empVO = empMapper.getEmp(empVO);
+			empList.add(empVO);
+		}
+		
+		return empList;
+	}
+
+	@Override
+	public List<ComCodeVO> getPosByEmpList(List<EmployeeVO> empList) {
+		List<ComCodeVO> posList = new ArrayList<ComCodeVO>();
+		for (EmployeeVO empVO : empList) {
+			
+			ComCodeVO ccVO = new ComCodeVO();
+			ccVO.setComCode(empVO.getEmpPos());
+			ccVO.setComGroup("EMP_POS");
+			
+			ccVO = ccMapper.getCc(ccVO);
+			posList.add(ccVO);
+		}		
+		
+		return posList;
+	}
+
+	@Override
+	public List<Integer> getGoodByNoticeList(List<NoticeVO> noticeList) {
+		List<Integer> goodCountList = new ArrayList<Integer>();
+		
+		for (int i = 0; i < noticeList.size(); i++) {
+			NoticeVO noticeVO = noticeList.get(i);
+			
+			List<GoodVO> tmpList = goodMapper.getGood(noticeVO.getNotCode());
+			if(tmpList.size() != 0) {
+				
+				goodCountList.add(tmpList.size());
+			}else {
+				goodCountList.add(0);
+			}
+		}
+		
+		return goodCountList;
+	}
+
+	@Override
+	public void register(NoticeVO noticeVO) {
+		noticeMapper.register(noticeVO);
+	}
+
+	
+	
+	
+	
+	
+}

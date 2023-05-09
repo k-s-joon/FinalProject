@@ -1,0 +1,75 @@
+package kr.or.ddit.main.service;
+
+import java.util.List;
+
+import javax.inject.Inject;
+
+import org.springframework.stereotype.Service;
+
+import kr.or.ddit.attfile.vo.AttFileVO;
+import kr.or.ddit.dep.vo.DepVO;
+import kr.or.ddit.employee.vo.EmployeeVO;
+import kr.or.ddit.mapper.EmployeeMapper;
+import kr.or.ddit.mapper.TimelineMapper;
+import kr.or.ddit.timeline.vo.TimelineVO;
+import kr.or.ddit.mapper.AttfileMapper;
+import kr.or.ddit.mapper.DepMapper;
+
+@Service
+public class LoginServiceImpl implements ILoginService{
+
+	@Inject
+	private EmployeeMapper empMapper;
+	
+	@Inject
+	private AttfileMapper aFMapper;
+
+	@Inject
+	private DepMapper depMapper;
+	
+	@Inject
+	private TimelineMapper timMapper;
+	
+	@Override
+	public EmployeeVO getEmp(EmployeeVO empVO) {
+		// TODO Auto-generated method stub
+		return empMapper.getEmp(empVO);
+	}
+
+	@Override
+	public EmployeeVO loginCheck(EmployeeVO empVO) {
+		// TODO Auto-generated method stub
+		return empMapper.loginCheck(empVO);
+	}
+
+	@Override
+	public AttFileVO getAf(AttFileVO afVO) {
+		// TODO Auto-generated method stub
+		return aFMapper.getAf(afVO);
+	}
+
+	@Override
+	public DepVO getDep(String depCode) {
+		// TODO Auto-generated method stub
+		return depMapper.getDep(depCode);
+	}
+
+	@Override
+	public List<DepVO> getDepList() {
+		// TODO Auto-generated method stub
+		return depMapper.getDepList();
+	}
+
+	@Override
+	public List<EmployeeVO> getEmpList() {
+		// TODO Auto-generated method stub
+		return empMapper.getEmpList();
+	}
+
+	@Override
+	public List<TimelineVO> timlist(String empNo) {
+		// TODO Auto-generated method stub
+		return timMapper.timlist(empNo);
+	}
+
+}

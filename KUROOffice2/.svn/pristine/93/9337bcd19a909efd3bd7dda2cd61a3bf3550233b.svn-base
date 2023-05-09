@@ -1,0 +1,61 @@
+package kr.or.ddit.cloud.controller;
+
+import java.util.List;
+
+import javax.inject.Inject;
+
+import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseBody;
+
+import kr.or.ddit.cloud.service.ICloudService;
+import kr.or.ddit.cloud.vo.CloudVO;
+import lombok.extern.slf4j.Slf4j;
+
+@Controller
+@Slf4j
+@RequestMapping("/cloud")
+public class CloudController {
+ 
+	@Inject
+	private ICloudService cloudService;
+	
+	@GetMapping("/home")
+	public String home(int empNo, Model model) {
+		
+		// 개인 자료실 리스트
+		List<CloudVO> empCloud = cloudService.empCloud(String.valueOf(empNo));
+		
+		// 여기서 부서자료실을 리스트로 리턴해서  model에 보내야하나??
+		List<CloudVO> depCloud = cloudService.depCloud(String.valueOf(empNo));
+		
+		model.addAttribute("empCloud", empCloud);
+		model.addAttribute("depCloud", depCloud);
+		log.debug("[empCloud] : "+ empCloud);
+		log.debug("[depCloud] : "+ depCloud);
+		log.debug("empNo : "+ empNo);
+		log.debug("depNo : "+ depCloud.get(0).getDepCode());
+		return "cloud/home";
+	}
+	
+	@GetMapping("/depCloud")
+	public String depCloud(@RequestParam("depCode") String depCode, Model model) {
+		
+		List<CloudVO> depFolderList = cloudService.depFolderList(depCode);
+		
+		model.addAttribute("depFolderList", depFolderList);
+		log.debug("[depCode] : " + depCode);
+		log.debug("[depFolderList] : " + depFolderList);
+		return "cloud/depCloud";
+	}
+	
+	@GetMapping("/myCloud")
+	public String myCloud() {
+		return "cloud/myCloud";
+	}
+
+	
+}

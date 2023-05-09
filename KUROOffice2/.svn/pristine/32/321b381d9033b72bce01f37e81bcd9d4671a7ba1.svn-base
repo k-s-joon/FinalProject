@@ -1,0 +1,245 @@
+package kr.or.ddit.mail.controller;
+
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import javax.inject.Inject;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpSession;
+
+import org.apache.commons.lang3.StringUtils;
+import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
+import org.springframework.validation.annotation.Validated;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.ModelAttribute;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.ResponseBody;
+
+import kr.or.ddit.attfile.vo.AttFileVO;
+import kr.or.ddit.contact.vo.ContactVO;
+import kr.or.ddit.employee.vo.EmployeeVO;
+import kr.or.ddit.mail.service.IMailService;
+import kr.or.ddit.mail.vo.MailRecVO;
+import kr.or.ddit.mail.vo.MailVO;
+import kr.or.ddit.mail.vo.SaveMailVO;
+import kr.or.ddit.message.vo.MesrecVO;
+import lombok.extern.slf4j.Slf4j;
+
+@Slf4j
+@Controller
+@RequestMapping("/mail")
+public class mailController {
+
+	@Inject
+	private IMailService mailService;
+
+	// 보낸메일함List
+	@GetMapping("/send")
+	public String Mailsend(HttpServletRequest req, Model model) {
+		
+		HttpSession session = req.getSession();
+		EmployeeVO empVO = (EmployeeVO) session.getAttribute("SessionInfo");
+		
+		List<MailVO> mailList = mailService.selectSendList(empVO.getEmpNo());
+		model.addAttribute("mailList", mailList);
+		log.info("보낸 mailList"+mailList);
+		
+		return "mail/send";
+	}
+	
+	
+
+	// 받은메일함List
+	@GetMapping("/recieveList")
+	public String MailRecieve(HttpServletRequest req, Model model) {
+		
+		HttpSession session = req.getSession();
+		EmployeeVO empVO = (EmployeeVO) session.getAttribute("SessionInfo");
+		
+		List<MailVO> receiveList = mailService.selectReceiveList(empVO.getEmpNo());
+		model.addAttribute("receiveList", receiveList);
+
+		return "mail/recieveList";
+	}
+
+	// 메일 detail
+	@GetMapping("/detail")
+	public String detail(String mailCode, Model model) {
+		
+		MailVO mailVO = mailService.getMail(mailCode);
+		
+		//작성자 empVO구하기
+		EmployeeVO empVO = mailService.getEmpByMail(mailVO);
+		model.addAttribute("mailVO", mailVO);
+		
+		//emp profile구하기
+		AttFileVO afVO = new AttFileVO();
+		afVO.setAfType("PROFILE");
+		afVO.setAfTcode(empVO.getEmpNo());
+		
+		afVO = mailService.getAf(afVO);
+		model.addAttribute("afVO", afVO);
+		
+		model.addAttribute("mailVO", mailVO);
+		
+		return "mail/detail";
+	}
+
+	// 메일보내기 주소록
+	@GetMapping("/write")
+	public String write(@Validated MailVO mailVO, Model model) {
+		
+		List<ContactVO> contactList = mailService.getContactList();
+		model.addAttribute("contactList", contactList);
+		
+		return "mail/write";
+	}
+	
+	//메일작성하기
+	@PostMapping("/write")
+	public String MailWrite(
+			@Validated MailVO mailVO,
+			HttpServletRequest req, Model model) {
+		
+		String sendEmpNo = ((EmployeeVO)req.getSession().getAttribute("SessionInfo")).getEmpNo();
+		String[] recvEmpNos = req.getParameterValues("empNo");
+		
+		int count = mailService.write(sendEmpNo,recvEmpNos,mailVO);
+		
+		if(recvEmpNos.length == count) {
+			model.addAttribute("msg", "ok");
+			
+		}
+			
+			List<ContactVO> contactList = mailService.getContactList();
+			model.addAttribute("contactList", contactList);
+			
+			
+			return "mail/write";
+		
+		
+	}
+	
+	//메일 임시저장 작성하기
+	//params매핑
+	// 요청URI : /mail/write?outboxBtns
+	@RequestMapping(value="/write",method=RequestMethod.POST,params="outboxBtn")
+	public String outboxMail(
+			@Validated MailVO mailVO,
+			HttpServletRequest req, Model model) {
+		
+		log.info("outboxMail에 왔다");
+		
+		String sendEmpNo = ((EmployeeVO)req.getSession().getAttribute("SessionInfo")).getEmpNo();
+		String[] recvEmpNos = req.getParameterValues("empNo");
+		log.info("mailVO : " + mailVO);
+		
+		int count = mailService.outboxWrite(sendEmpNo, mailVO);
+		
+		if(recvEmpNos.length == count) {
+			model.addAttribute("msg","ok");
+		}
+		//주소록에서 사원들 불러오는 리스트
+		List<ContactVO> contactList = mailService.getContactList();
+		model.addAttribute("contactList", contactList);
+		
+		return "mail/write";
+	}
+	
+	
+	
+	//메일 보관함
+	@GetMapping("/store")
+	public String store(HttpServletRequest req, Model model) {
+		
+		List<MailVO> updateMailList = mailService.getStoreList();
+		model.addAttribute("updateMailList", updateMailList);
+		
+		List<EmployeeVO> empList = mailService.getEmpByStoreList(updateMailList);
+		model.addAttribute("empList", empList);
+		
+		return "mail/store";
+	}
+	
+	//임시보관함
+	@GetMapping("outbox")
+	public String outbox(HttpServletRequest req, Model model) {
+		
+		List<MailVO> outboxList = mailService.getOutboxList();
+		model.addAttribute("outboxList",outboxList);
+		
+		List<EmployeeVO> empList = mailService.getEmpByOutboxList(outboxList);
+		model.addAttribute("empList",empList);
+		
+		return "mail/outbox";
+	}
+
+	
+	// 메일 쓰레기통
+	@GetMapping("/trash")
+	public String trash() {
+		
+		return "mail/trash";
+	}
+	
+	@PostMapping(value = "/update", produces = "text/plain")
+	@ResponseBody
+	public String updateMail(@RequestBody MailRecVO marVO){
+		
+		log.info("code >> "+marVO.getMailCode());
+		mailService.updateMail(marVO);
+		return "success";
+	}
+	
+	
+	//받은 메일함 삭제
+	@PostMapping(value= "/delete", produces = "text/plain")
+	@ResponseBody
+	public String deleteMail(@RequestBody MailVO mailVO) {
+		
+		mailService.deleteMail(mailVO);
+		return "success";
+		
+	}
+	
+	@GetMapping("/outboxdetail")
+	public String outboxdetail(String mailCode, Model model) {
+		
+		MailVO mailVO = mailService.getoutboxMail(mailCode);
+		
+		EmployeeVO empVO = mailService.getempByMail(mailVO);
+		model.addAttribute("empVO",empVO);
+		
+		model.addAttribute("mailVO", mailVO);
+		
+		return "mail/outboxdetail";
+	}
+	
+	//경영자료메일함
+	@GetMapping("/mng")
+	public String mngMail() {
+		
+		return "mail/mng";
+	}
+	//회계자료메일함
+	@GetMapping("/act")
+	public String actMail() {
+		
+		return "mail/act";
+	}
+	//참고자료메일함
+	@GetMapping("/ref")
+	public String refMail() {
+		
+		return "mail/ref";
+	}
+	
+	
+	
+	
+}

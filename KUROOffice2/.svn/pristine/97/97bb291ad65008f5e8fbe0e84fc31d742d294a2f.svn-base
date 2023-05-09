@@ -1,0 +1,222 @@
+<%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
+<%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
+<%@ taglib uri="http://java.sun.com/jsp/jstl/fmt" prefix="fmt"%>
+
+<!-- -------------------------------------------------------------- -->
+<!-- Bread crumb and right sidebar toggle -->
+<!-- -------------------------------------------------------------- -->
+<div class="page-breadcrumb">
+  <div class="row">
+    <div class="col-5 align-self-center">
+      <h4 class="page-title">자유게시판</h4>
+      <div class="d-flex align-items-center">
+        <nav aria-label="breadcrumb">
+          <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="#">Home</a></li>
+            <li class="breadcrumb-item active" aria-current="page">Library</li>
+          </ol>
+        </nav>
+      </div>
+    </div>
+    <div class="col-7 align-self-center">
+      <div class="d-flex no-block justify-content-end align-items-center">
+        <div class="me-2">
+          <div class="lastmonth"></div>
+        </div>
+        <div class="">
+          <small>LAST MONTH</small>
+          <h4 class="text-info mb-0 font-medium">$58,256</h4>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+<!-- -------------------------------------------------------------- -->
+<!-- End Bread crumb and right sidebar toggle -->
+<!-- -------------------------------------------------------------- -->
+<!-- -------------------------------------------------------------- -->
+<!-- Container fluid  -->
+<!-- -------------------------------------------------------------- -->
+<div class="container-fluid">
+  <!-- -------------------------------------------------------------- -->
+  <!-- Start Page Content -->
+  <!-- -------------------------------------------------------------- -->
+  <!-- basic table -->
+  <div class="row">
+    <div class="col-12">
+      <!-- ---------------------
+                    start Tickets
+                ---------------- -->
+      <div class="card" style="width: 98.5%; margin-left: 15px;">
+        <div class="card-body">
+          <h4 class="card-title">자유게시판?</h4>
+          <div class="row mt-4">
+            <!-- Column -->
+            <div class="col-md-6 col-lg-3 col-xlg-3">
+              <div class="card card-hover">
+                <div class="p-2 rounded bg-light-primary text-center">
+                  <h1 class="fw-light text-primary">2,064</h1>
+                  <h6 class="text-primary">Total Tickets</h6>
+                </div>
+              </div>
+            </div>
+            <!-- Column -->
+            <div class="col-md-6 col-lg-3 col-xlg-3">
+              <div class="card card-hover">
+                <div class="p-2 rounded bg-light-warning text-center">
+                  <h1 class="fw-light text-warning">1,738</h1>
+                  <h6 class="text-warning">In Progress</h6>
+                </div>
+              </div>
+            </div>
+            <!-- Column -->
+            <div class="col-md-6 col-lg-3 col-xlg-3">
+              <div class="card card-hover">
+                <div class="p-2 rounded bg-light-success text-center">
+                  <h1 class="fw-light text-success">1100</h1>
+                  <h6 class="text-success">Opened</h6>
+                </div>
+              </div>
+            </div>
+            <!-- Column -->
+            <div class="col-md-6 col-lg-3 col-xlg-3">
+              <div class="card card-hover">
+                <div class="p-2 rounded bg-light-danger text-center">
+                  <h1 class="fw-light text-danger">964</h1>
+                  <h6 class="text-danger">Closed</h6>
+                </div>
+              </div>
+            </div>
+            <!-- Column -->
+          </div>
+          <div class="card" style="width: 98.5%; margin-left: 15px;">
+          <div class="card-body">
+          <div class="table-responsive" style="overflow: hidden;">
+            <table id="zero_table" class="table table-striped table-bordered text-nowrap">
+              <thead>
+                <!-- start row -->
+                <tr>
+                  <th>#</th>
+                  <th>분류?</th>
+                  <th>Title</th>
+                  <th>작성자</th>
+                  <th>Date</th>
+                  <th>조회수</th>
+                  <th>좋아요</th>
+                </tr>
+                <!-- end row -->
+              </thead>
+              <tbody>
+              	<!-- |#|제목 [댓글수]|작성자|작성일|조회수|좋아요| -->
+              	<c:forEach items="${freeList }" var="free" varStatus="i">
+	                <!-- start row -->
+	                <tr>
+	                  <td>글번호</td>
+	                  <td>
+	                    <span class="badge bg-light-warning text-warning font-medium"
+	                      >In Progress</span
+	                    >
+	                  </td>
+	                  <td>
+	                    <a href="/free/detail?freeCode=${free.freeCode }" class="font-medium link"
+	                      >${free.freeTitle }</a
+	                    >
+	                  </td>
+	                  <td>
+	                  	<!-- 클릭하면 div 나타나게. -->
+	                    <a href="#" class="fw-bold link">${empList.get(i.index).empName } ${posList.get(i.index).ccName }</a>
+	                  </td>
+	                  <td><fmt:formatDate value="${free.freeDate }" pattern="yyyy/MM/dd"></fmt:formatDate></td>
+	                  <td>${free.freeHit }</td>
+	                  <td>${goodCountList.get(i.index) }</td>
+	                </tr>
+	                <!-- end row -->              	
+              	</c:forEach>
+              </tbody>
+            </table>
+      	</div>
+      	</div>
+			<div class="row">
+				<!-- <div class="col-sm-12 col-md-5">
+					<div class="dataTables_info" id="zero_config_info" role="status"
+						aria-live="polite">Showing 1 to 10 of 13 entries</div>
+				</div>
+				<div class="col-sm-12 col-md-6">
+					<div class="dataTables_paginate paging_simple_numbers"
+						id="zero_config_paginate">
+						<ul class="pagination">
+							<li class="paginate_button page-item previous disabled"
+								id="zero_config_previous"><a href="#"
+								aria-controls="zero_config" data-dt-idx="0" tabindex="0"
+								class="page-link">Previous</a></li>
+							<li class="paginate_button page-item active"><a href="#"
+								aria-controls="zero_config" data-dt-idx="1" tabindex="0"
+								class="page-link">1</a></li>
+							<li class="paginate_button page-item "><a href="#"
+								aria-controls="zero_config" data-dt-idx="2" tabindex="0"
+								class="page-link">2</a></li>
+							<li class="paginate_button page-item next" id="zero_config_next"><a
+								href="#" aria-controls="zero_config" data-dt-idx="3"
+								tabindex="0" class="page-link">Next</a></li>
+						</ul>
+					</div>
+				</div> -->
+				<div class="col-sm-12 col-md-1" style="padding-right: 0px;">
+					<button type="button" id="btnRegister" class="btn waves-effect waves-light btn-info">
+						<i class="fa-solid fa-pen-to-square"></i> 글쓰기
+					</button>		
+				</div>
+			</div>   
+          </div>
+        </div>
+	  </div>   
+      
+      <!-- ---------------------
+                    end Tickets
+                ---------------- -->
+    </div>
+  </div>
+</div>
+<script>
+$(function(){
+	
+	$('#btnRegister').on('click',function(){
+		location.href = '/free/register';
+	});
+	
+	
+	
+})
+
+</script>
+
+
+<!-- 
+	예외처리 
+	
+	throw - 일을 던져서 사용자 측에 정보 전달
+	try catch - 예외를 자신이 직접 해결
+	어떤 방식으로 처리할 지 상황에 따라 결정해야 함.
+	
+	web.xml 예외 처리 설정.	
+	
+	
+	공통코드 테이블 만들어서 통합 관리. 
+	
+	로그 - slf4j
+	
+	썸네일 처리 - 출력은 resize로 경량화 해야 함. 다운로드는 원본.
+	
+	팝업 - 별개로 일을 처리할 때 > 윈도우 팝업. 다른 일을 멈출 경우 모달
+	
+	VO 수정 - attfile, emp, free, sch
+ -->
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 

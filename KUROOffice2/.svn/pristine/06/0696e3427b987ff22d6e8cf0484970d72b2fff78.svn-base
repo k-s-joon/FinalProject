@@ -1,0 +1,305 @@
+package kr.or.ddit.main.controller;
+
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Random;
+
+import javax.inject.Inject;
+import javax.mail.internet.MimeMessage;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpSession;
+
+import org.apache.commons.collections.map.HashedMap;
+import org.json.simple.JSONArray;
+import org.json.simple.JSONObject;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.mail.javamail.JavaMailSenderImpl;
+import org.springframework.mail.javamail.MimeMessageHelper;
+import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.ResponseBody;
+
+import com.google.gson.Gson;
+import com.google.gson.JsonObject;
+
+import kr.or.ddit.attfile.vo.AttFileVO;
+import kr.or.ddit.common.Utils;
+import kr.or.ddit.dep.vo.DepVO;
+import kr.or.ddit.employee.service.IEmpService;
+import kr.or.ddit.employee.vo.EmployeeVO;
+import kr.or.ddit.good.vo.GoodVO;
+import kr.or.ddit.main.service.ILoginService;
+import kr.or.ddit.main.vo.mailjoinVO;
+import kr.or.ddit.timeline.vo.TimelineVO;
+import kr.or.ddit.work.vo.WorkVO;
+import lombok.extern.slf4j.Slf4j;
+
+@Slf4j
+@Controller
+@RequestMapping("/conn")
+public class LoginController {
+
+	@Inject
+	private ILoginService loginService;
+	
+	@Inject
+	private JavaMailSenderImpl mailSender;
+	
+	@Inject
+	private IEmpService empService;
+	
+	@GetMapping("/login")
+	public String login() {
+		
+		return "main/login";
+	}
+	
+	@RequestMapping(value = "/login", method = RequestMethod.POST)
+	public String login(HttpServletRequest req, EmployeeVO empVO, Model model) {
+		
+		// 임시 로그인 체크
+//		log.info("no, pw >> " + empVO.getEmpNo()+", "+empVO.getEmpPw());
+		empVO = loginService.loginCheck(empVO);
+		
+		if (empVO != null) {
+			
+			HttpSession session = req.getSession();
+			
+			// erd 수정 - 먼저 이전 데이터 먼저 바뀐 컬럼에 맞게 넣기
+			AttFileVO afVO = new AttFileVO();
+			afVO.setAfType("PROFILE");
+			afVO.setAfTcode(empVO.getEmpNo());			
+			
+			AttFileVO profile = loginService.getAf(afVO);
+			session.setAttribute("profile", profile);			
+			
+			// 부서명
+			DepVO depVO = loginService.getDep(empVO.getDepCode());
+			session.setAttribute("depVO", depVO);
+			
+			session.setAttribute("SessionInfo", empVO);	
+			
+			// 조직도 데이터 (일단은 로그인 해야 보이는 걸로)
+			List<DepVO> depList = loginService.getDepList();
+			List<EmployeeVO> empList = loginService.getEmpList();
+			
+			List<String> treeJson = new ArrayList<String>();
+			
+			for (DepVO dVO : depList) {
+				Map<String, String> tempMap = new HashMap<String, String>();
+				
+				tempMap.put("id", dVO.getDepCode());
+				
+				// 상위부서가 없는 경우(DEP1) #으로 입력
+				if (dVO.getDepParcode() == null) {
+					
+					tempMap.put("parent", "#");
+				}else {
+					tempMap.put("parent", dVO.getDepParcode());
+				}
+				tempMap.put("text", dVO.getDepName());
+				
+				
+//				log.info("json map >> " + new JSONObject(tempMap));
+				// map을 json으로 변환
+				treeJson.add(new JSONObject(tempMap).toString());
+			}
+			
+			// emp id를 만들기 위한 map
+			Map<String, Integer> idMap = new HashMap<String, Integer>();
+			
+			for (EmployeeVO eVO : empList) {
+				Map<String, String> tempMap = new HashMap<String, String>();
+				
+				
+				if (idMap.get(eVO.getDepCode()) == null) {
+					idMap.put(eVO.getDepCode(), 1);
+				}else {
+					idMap.put(eVO.getDepCode(), ((int) idMap.get(eVO.getDepCode()))+1);
+				}
+				
+				tempMap.put("id", eVO.getDepCode() + idMap.get(eVO.getDepCode()));
+				tempMap.put("parent", eVO.getDepCode());
+				tempMap.put("text", eVO.getEmpName()+" "+eVO.getEmpPos());
+				tempMap.put("empNo", eVO.getEmpNo());
+				treeJson.add(new JSONObject(tempMap).toString());
+			}
+			
+			session.setAttribute("treeJson", treeJson);
+			session.setAttribute("empList", empList);
+			
+			// 타임라인 정보
+			List<TimelineVO> timlist = loginService.timlist(empVO.getEmpNo()); // empNo
+			session.setAttribute("timlist",timlist); // session으로 수정
+			
+			// 근태 정보
+			List<WorkVO> workList = loginService.getWorkList(empVO);			
+			
+			JSONArray jsonWorkList = new JSONArray();
+			Gson gson = new Gson();
+			
+			for (WorkVO vo : workList) {
+				jsonWorkList.add(gson.toJson(vo));
+			}
+			
+			log.info("j list >> " + jsonWorkList);
+			session.setAttribute("jsonWorkList", jsonWorkList);
+			
+			// 부서원 이미지
+			List<AttFileVO> empImgList = loginService.getAfByEmpList(empList);
+			String empImgListJson = gson.toJson(empImgList);
+			
+			session.setAttribute("empImgListJson", empImgListJson);			
+			
+			// 전체 부서원 정보
+			List<EmployeeVO> depEmpList = loginService.getEmpListByDep(empVO.getDepCode());
+			
+			// 부서원 직급 순으로 정렬
+			Collections.sort(depEmpList, new EmpPosComparator());
+			model.addAttribute("depEmpList", depEmpList);
+			
+			// 부서원 출근 상태
+			List<WorkVO> depWorkList = loginService.getDepWorkList(empVO.getDepCode());
+			List<String> statusList = new ArrayList<String>();
+			
+			boolean addFlag = true;
+			
+//			for (EmployeeVO vo : empList) { // foreach는 순서없이 부르나
+			for (int i=0; i<depEmpList.size(); i++) { 
+//				log.info("empList >> " + empList.get(i));
+				EmployeeVO vo = depEmpList.get(i); 
+				for (int j = 0; j < depWorkList.size(); j++) {
+					if (vo.getEmpNo().equals(depWorkList.get(j).getEmpNo())) {
+//						log.info("true emp >> " + vo.getEmpName()+" "+ vo.getEmpNo()+" "+depWorkList.get(j).getEmpNo());
+						if(depWorkList.get(j).getWorkType().equals("업무종료")) {
+							statusList.add("END");
+							addFlag = false;
+							break;
+						}else if(depWorkList.get(j).getWorkType().equals("업무")) {
+							statusList.add("START");
+							addFlag = false;
+							break;
+						}
+					}
+				}
+				
+				if (addFlag) {
+					statusList.add("NONE");
+				}
+				
+				addFlag = true;
+			}
+			
+			log.info("st list >> " + statusList);
+			model.addAttribute("statusList", statusList);
+			
+			
+			
+			List<GoodVO> goodList = loginService.goodList(empVO.getEmpNo()); //empNo
+			session.setAttribute("goodlist", goodList); 
+			
+			return "main/home";
+		}
+		
+		model.addAttribute("msg", "로그인 정보를 확인해주세요.");
+		return "conn/login";
+	}
+	
+
+	@GetMapping("/logout")
+	public String logout(HttpServletRequest req) {
+		
+		HttpSession session = req.getSession();
+		session.invalidate();
+		
+		return "conn/login";
+	}
+	
+	@RequestMapping(value = "/find", method = RequestMethod.GET)
+	public String loginFind(Model model) {
+		model.addAttribute("bodyText","login-page");
+		log.debug("find>>>");
+		return "conn/find";
+	}
+	
+	@RequestMapping(value = "/idfind", method = RequestMethod.POST)
+	public ResponseEntity<String> idFind(EmployeeVO empVO){
+		String empNo = empService.idFind(empVO);
+		return new ResponseEntity<String>(empNo,HttpStatus.OK);
+	}
+	
+	@RequestMapping(value = "/pwfind", method =  RequestMethod.POST)
+	public ResponseEntity<String> pwFind(EmployeeVO empVO){
+		String empPw = empService.pwFind(empVO);
+		return new ResponseEntity<String>(empPw,HttpStatus.OK);
+	}
+	
+	
+	@RequestMapping(value = "/sendMail", produces = "text/plain; charset=utf-8")
+	@ResponseBody
+	public ResponseEntity<String> sendMail(@RequestBody mailjoinVO mailVO, HttpSession session) throws Exception{
+		Random random = new Random();
+		int ranNum = random.nextInt(100000);
+		session.setAttribute("ranNum",ranNum);
+		session.setMaxInactiveInterval(20);
+		String from = "hee822090@gmail.com";
+		 try {
+	            MimeMessage mail = mailSender.createMimeMessage();
+	              MimeMessageHelper mailHelper = new MimeMessageHelper(mail,"UTF-8");
+	            mailHelper.setFrom(from);
+	            mailHelper.setTo(mailVO.getTo());
+	            mailHelper.setSubject("인증번호입니다");
+	            mailHelper.setText("회원가입 인증번호는 " + ranNum + "입니다", true);
+	            mailSender.send(mail);
+	            
+	        } catch(Exception e) {
+	            e.printStackTrace();
+	            return new ResponseEntity<String>("FAILED", HttpStatus.OK);
+	        }
+	        return new ResponseEntity<String>("SUCCESS", HttpStatus.OK);
+	}
+	@RequestMapping(value = "/numberCheck", produces = "text/plain; charset=utf-8")
+	@ResponseBody
+    public ResponseEntity<String> numCheck(@RequestBody mailjoinVO mailVO, HttpSession session) throws Exception{
+		int ranNum;
+		System.out.println(mailVO.getJoinNum());
+		if(session.getAttribute("ranNum")!=null) {
+		 ranNum = (int)session.getAttribute("ranNum");
+		}else {
+			ranNum = 0;
+		}
+		
+		
+		if(mailVO.getJoinNum().equals(String.valueOf(ranNum))) {
+			
+			return new ResponseEntity<String>("SUCCESS", HttpStatus.OK);
+		}else {
+			return new ResponseEntity<String>("FAILED", HttpStatus.OK);
+		}
+	        
+    }
+}
+
+class EmpPosComparator implements Comparator<EmployeeVO>{
+
+	@Override
+	public int compare(EmployeeVO vo1, EmployeeVO vo2) {
+		// TODO Auto-generated method stub
+		if(Utils.calPos(vo2.getEmpPos()) == Utils.calPos(vo1.getEmpPos())) {
+			return vo1.getEmpName().compareTo(vo2.getEmpName());
+		}else {
+			return Utils.calPos(vo2.getEmpPos()) - Utils.calPos(vo1.getEmpPos());
+		}
+	}
+	
+}
+

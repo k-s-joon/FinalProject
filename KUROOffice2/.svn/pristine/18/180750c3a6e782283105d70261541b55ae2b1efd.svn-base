@@ -1,0 +1,100 @@
+<div class="col-lg-12" style="width: 98.6%; margin-left: 15px;">
+						<!-- ---------------------
+	                            start Person Info
+	                        ---------------- -->
+						<div class="card">
+							<div class="card-header bg-info"
+								style="background-color: #3699ff !important;">
+								<h4 class="mb-0 text-white">공지사항 등록</h4>
+							</div>
+							<!-- POST_CODE, BOA_CODE, EMP_NO, POST_TITLE, POST_DATE, POST_HIT, POST_ESS, POST_CONTENT -->
+							<form id="postForm" action="/board/insertPost" method="post">
+								<input type="hidden" id="empNo" name="empNo"
+									value="${SessionInfo.empNo }"> <input type="hidden"
+									id="boaCode" name="boaCode" value="${boa.boaCode }"> <input
+									type="hidden" id="postEss" name="postEss">
+								<div>
+									<div class="card-body">
+										<h3 class="card-title">
+											필수 입력 항목 <font color="red">*</font>
+										</h3>
+										<div class="row pt-3">
+
+											<div class="col-md-9">
+												<div class="mb-3 has-danger">
+													<label class="insertLbl control-label">제목</label> <input
+														name="postTitle" type="text" id="postTitle"
+														class="form-control form-control-danger" /> <small
+														style="display: none;" class="form-control-feedback">
+														This field has error. </small>
+												</div>
+											</div>
+
+
+
+										</div>
+
+										<!--/row-->
+										<div class="row">
+											<!--/span-->
+
+											<div class="col-md-3">
+												<div class="mb-3">
+													<label class="insertLbl control-label">시작일</label> <input
+														id="essDate" type="date" class="form-control" />
+												</div>
+											</div>
+											
+											<div class="col-md-3">
+												<div class="mb-3">
+													<label class="insertLbl control-label">종료일</label> <input
+														id="essDate" type="date" class="form-control" />
+												</div>
+											</div>
+
+											<div class="col-md-3">
+												팝업여부
+											</div>
+										</div>
+									</div>
+									<hr />
+									<div class="card-body">
+										<!--/row-->
+										<label class="insertLbl control-label">상세 내용</label>
+										<textarea id="postContent" name="postContent"
+											class="form-control" rows="14" style="width: 982px;"></textarea>
+
+										<!--/row-->
+										<div class="col-md-4" style="margin-top: 20px;">
+											<div class="mb-3">
+												<label class="insertLbl control-label">파일 첨부</label> <input
+													class="form-control" type="file" id="formFileMultiple"
+													multiple="">
+											</div>
+										</div>
+									</div>
+									<div class="form-actions">
+										<div class="card-body" style="top: -20px; position: relative;">
+											<button id="postInsert"
+												class="btn btn-success rounded-pill px-4">
+												<div class="d-flex align-items-center">
+													<i data-feather="save" class="feather-sm me-1 fill-icon"></i>
+													등록
+												</div>
+											</button>
+											<button type="button"
+												class="insertBtn btn btn-danger rounded-pill px-4 ms-2 text-white">
+												<div class="d-flex align-items-center">
+													<i data-feather="x-circle"
+														class="feather-sm me-1 fill-icon"></i> 취소
+												</div>
+											</button>
+										</div>
+									</div>
+								</div>
+							</form>
+						</div>
+						<!-- ---------------------
+	                            end Person Info
+	                        ---------------- -->
+					</div>

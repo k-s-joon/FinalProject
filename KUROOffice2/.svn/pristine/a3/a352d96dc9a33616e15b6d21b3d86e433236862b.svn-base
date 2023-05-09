@@ -1,0 +1,431 @@
+<%@ page language="java" contentType="text/html; charset=UTF-8"
+	pageEncoding="UTF-8"%>
+<%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c"%>
+<%@ taglib uri="http://java.sun.com/jsp/jstl/functions" prefix="fn"%>
+<%@ taglib uri="http://java.sun.com/jsp/jstl/fmt" prefix="fmt"%>
+
+<style>
+</style>
+
+<!-- 지도 -->
+<!-- <script type="text/javascript" src="//dapi.kakao.com/v2/maps/sdk.js?appkey=4d709abb0cc151c4ef71c096c4b67adb"></script> -->
+<script src="https://polyfill.io/v3/polyfill.min.js?features=default"></script>
+<script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAiWY21ACg4inVRotV8tzrDyzk2n8jHt4c&callback=initMap&v=weekly" defer></script>
+<div class="page-breadcrumb">
+	<div class="row">
+		<div class="col-5 align-self-center">
+			<h4 class="page-title">마이페이지</h4>
+			<div class="d-flex align-items-center">
+				<nav aria-label="breadcrumb">
+					<ol class="breadcrumb">
+						<li class="breadcrumb-item"><a href="#">Home</a></li>
+						<li class="breadcrumb-item active" aria-current="page">Library</li>
+					</ol>
+				</nav>
+			</div>
+		</div>
+	</div>
+</div>
+<!-- -------------------------------------------------------------- -->
+<!-- End Bread crumb and right sidebar toggle -->
+<!-- -------------------------------------------------------------- -->
+<!-- -------------------------------------------------------------- -->
+<!-- Container fluid  -->
+<!-- -------------------------------------------------------------- -->
+<div class="container-fluid">
+	<!-- -------------------------------------------------------------- -->
+	<!-- Start Page Content -->
+	<!-- -------------------------------------------------------------- -->
+	<!-- Row -->
+	<div class="row">
+		<!-- Column -->
+		<div class="col-lg-9 col-xlg-3 col-md-5">
+			<!-- --------------------- start Hanna Gover ---------------- -->
+			<div class="card">
+				<div class="card-body">
+					<div class="mt-4" style="text-align: center;">
+						<img id="profileImg" src="${pageContext.request.contextPath}/resources/images/${profile.afSave}" class="rounded-circle"
+							width="150" height="150" style="cursor: pointer;" data-bs-toggle="modal" data-bs-target="#profileImgMod"/>
+							
+						<h4 class="card-title mt-2">${SessionInfo.empName } ${SessionInfo.empPos }</h4>
+						<h6 class="card-subtitle">${depVO.depName }</h6>
+						<div style="font-size: 1.8em;" class="row text-center justify-content-md-center">
+							<div class="col-5">
+								<a href="javascript:void(0)" class="link" data-bs-toggle="tooltip" data-bs-placement="top" title="작성한 게시물 수">
+									<i class="fa-regular fa-pen-to-square"></i>
+									<font class="font-medium">254</font>
+								</a>
+							</div>
+							<div class="col-5">
+								<a href="javascript:void(0)" class="link" data-bs-toggle="tooltip" data-bs-placement="top" title="받은 좋아요 수">
+									<i style="color: red;" class="fa-solid fa-heart"></i>
+									<font class="font-medium">54</font>
+								</a>
+							</div>
+						</div>
+					</div>
+					
+					<!-- 프로필 이미지 수정 Modal -->
+					<div id="profileImgMod" class="modal fade" tabindex="-1"
+						aria-labelledby="primary-header-modalLabel" aria-hidden="true">
+						<div class="modal-dialog">
+							<div class="modal-content">
+								<div class="modal-header modal-colored-header bg-primary text-white">
+									<h4 class="modal-title" id="primary-header-modalLabel">
+										프로필 이미지 변경
+									</h4>
+									<button type="button" class="btn-close" data-bs-dismiss="modal"
+										aria-label="Close"></button>
+								</div>
+								<div class="modal-body">
+									<div id="imgDisp" style="text-align: center; margin-bottom: 15px;">
+										<img src="${pageContext.request.contextPath}/resources/images/${profile.afSave}" class="rounded-circle"
+											width="150">
+									</div>
+									<input class="form-control" type="file" id="imgFile">
+								</div>
+								<div class="modal-footer">
+									<button type="button" id="imgSave"
+										class="btn btn-light-primary text-primary font-medium">
+										저장</button>
+									<button id="imgClose" type="button" class="btn btn-light" data-bs-dismiss="modal">
+										취소</button>
+								</div>
+							</div>
+							<!-- /.modal-content -->
+						</div>
+						<!-- /.modal-dialog -->
+					</div>				
+					
+					
+					
+				</div>
+				<div>
+					<hr />
+				</div>
+				<div class="card-body">
+					<h6>${SessionInfo.empMsg}</h6>
+<!-- 					<div class="map-box"> -->
+<!-- 						<iframe -->
+<!-- 							src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d470029.1604841957!2d72.29955005258641!3d23.019996818380896!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x395e848aba5bd449%3A0x4fcedd11614f6516!2sAhmedabad%2C+Gujarat!5e0!3m2!1sen!2sin!4v1493204785508" -->
+<!-- 							width="100%" height="150" frameborder="0" style="border: 0" -->
+<!-- 							allowfullscreen></iframe> -->
+<!-- 						<div id="map" style="height:450px; width: 450px;"></div> -->
+<!-- 					</div> -->
+				</div>
+			</div>
+			<!-- --------------------- end Hanna Gover  ---------------- -->
+		</div>
+		<!-- Column -->
+		<!-- Column -->
+		<div class="col-lg-3 col-md-7">
+			<!-- --------------------- start Timeline ---------------- -->
+			<div class="card" style="height:1200px">
+				<!-- Tabs -->
+				<ul class="nav nav-pills custom-pills" id="pills-tab" role="tablist">
+					<li class="nav-item">
+						<a class="nav-link active" id="pills-timeline-tab" data-bs-toggle="pill"
+							href="#current-month" role="tab" aria-controls="pills-timeline" aria-selected="true">
+							타임라인
+						</a>
+					</li>
+					<li class="nav-item">
+						<a class="nav-link" id="pills-profile-tab" data-bs-toggle="pill" href="#last-month"
+						role="tab" aria-controls="pills-profile" aria-selected="false">프로필</a>
+					</li>
+					<li class="nav-item">
+						<a class="nav-link" id="pills-setting-tab" data-bs-toggle="pill"
+						href="#previous-month" role="tab" aria-controls="pills-setting"
+						aria-selected="false">수정</a>
+					</li>
+				</ul>
+				<!-- 타임라인Tabs -->
+				<div class="tab-content" id="pills-tabContent" style="overflow:auto">
+					<div class="tab-pane fade show active" id="current-month"
+						role="tabpanel" aria-labelledby="pills-timeline-tab">
+						<div class="card-body" style="overflow: auto; height: 547px;">
+							<c:choose>
+								<c:when test="${empty timlist }">
+										<div>타임라인이 존재하지 않습니다.</div>
+								</c:when>
+								<c:otherwise>
+									<c:forEach items="${timlist }" var="timeline">
+			 							<div class="profiletimeline mt-0">
+											<div class="sl-item">
+												<div class="sl-left">
+												 <c:set value="${timeline.timType }" var="str"/>
+													<c:choose>
+													<c:when test="${fn:substring(str,0,2) eq 'CO'}">
+													<img src="${pageContext.request.contextPath }/resources/images/CO.JPG" alt="CO"
+														class="rounded-circle" />
+													</c:when> 
+													<c:when test="${fn:substring(str,0,2) eq 'FR'}">
+													<img src="${pageContext.request.contextPath}/resources/images/FR.JPG" alt="FR"
+														class="rounded-circle" />
+													</c:when> 
+													<c:when test="${fn:substring(str,0,2) eq 'RE'}">
+													<img src="${pageContext.request.contextPath}/resources/images/RE.JPG" alt="RE"
+														class="rounded-circle" />
+													</c:when> 
+													<c:when test="${fn:substring(str,0,3) eq 'CON'}">
+													<img src="${pageContext.request.contextPath}/resources/images/AD.JPG" alt="CON"
+														class="rounded-circle" />
+													</c:when> 
+													<c:when test="${fn:substring(str,0,2) eq 'AP'}">
+													<img src="${pageContext.request.contextPath}/resources/images/AP.JPG" alt="AP"
+														class="rounded-circle" />
+													</c:when> 
+													<c:when test="${fn:substring(str,0,2) eq 'SC'}">
+													<img src="${pageContext.request.contextPath}/resources/images/SC.JPG" alt="SC"
+														class="rounded-circle" />
+													</c:when> 
+													<c:when test="${fn:substring(str,0,2) eq 'NO'}">
+ 													<img src="${pageContext.request.contextPath}/resources/images/NO.JPG" alt="NO" 
+														class="rounded-circle" /> 
+													</c:when>
+													<c:otherwise>
+ 													<img src="${pageContext.request.contextPath}/resources/assets/images/users/4.jpg" alt="user" 
+														class="rounded-circle" /> 
+													</c:otherwise>
+													</c:choose>
+												</div>
+												<div class="sl-right">
+													<div>
+														<span class="sl-date" value="${timeline.timDate }">${timeline.timDate }</span>
+														<p>
+															 <a href="javascript:void(0)"> ${timeline.timContent }"</a>
+													</div>
+												</div>
+											</div>
+											<hr />
+										</div>
+									</c:forEach>
+								</c:otherwise>
+							</c:choose>
+						</div>
+					</div>
+					<div class="tab-pane fade" id="last-month" role="tabpanel"
+						aria-labelledby="pills-profile-tab">
+						<div class="card-body">
+						
+						
+							<div class="row">
+								<div class="col-md-4 col-xs-6 b-r">
+									<strong>사원 이름</strong> <br />
+									<p class="text-muted">${SessionInfo.empName }</p>
+								</div>
+								<div class="col-md-4 col-xs-6 b-r">
+									<strong>직급</strong> <br />
+									<p class="text-muted">${SessionInfo.empPos }</p>
+								</div>
+								<div class="col-md-4 col-xs-6 b-r">
+									<strong>부서</strong> <br />
+									<p class="text-muted">${depVO.depName }</p>
+								</div>
+							</div>
+							<div class="row">
+								<div class="col-md-4 col-xs-6">
+									<strong>주민등록번호</strong> <br />
+									<p class="text-muted">${SessionInfo.empReg }</p>
+								</div>
+								<div class="col-md-4 col-xs-6 b-r">
+									<strong>전화번호</strong> <br />
+									<p class="text-muted">${SessionInfo.empTel }</p>
+								</div>
+								<div class="col-md-4 col-xs-6 b-r">
+									<strong>이메일</strong> <br />
+									<p class="text-muted">${SessionInfo.empEmail }</p>
+								</div>
+							</div>
+							<div class="row">
+								<div class="col-md-4 col-xs-6 b-r">
+									<strong>잔여 연차</strong> <br />
+									<p class="text-muted">${SessionInfo.empPv }일</p>
+								</div>
+								<div class="col-md-4 col-xs-6">
+									<strong>입사일</strong> <br />
+									<p class="text-muted">${SessionInfo.empRdate }</p>
+								</div>
+							</div>
+							<div class="row">
+								<div class="col-md-6 col-xs-6 b-r">
+									<strong>주소</strong> <br />
+									<p class="text-muted">${SessionInfo.empAddr } ${SessionInfo.empPostcode }</p>
+								</div>
+							</div>
+							
+							
+						</div>
+					</div>
+					<!-- 맨 오른쪽 수정 탭 -->
+					<div class="tab-pane fade" id="previous-month" role="tabpanel"
+						aria-labelledby="pills-setting-tab">
+						<div class="card-body">
+							<form class="form-horizontal form-material">
+								<div class="form-group">
+									<label class="col-md-12">Full Name</label>
+									<div class="col-md-12">
+										<input type="text" placeholder="Johnathan Doe"
+											class="form-control form-control-line" />
+									</div>
+								</div>
+								<div class="form-group">
+									<label for="example-email" class="col-md-12">Email</label>
+									<div class="col-md-12">
+										<input type="email" placeholder="johnathan@admin.com"
+											class="form-control form-control-line" name="example-email"
+											id="example-email" />
+									</div>
+								</div>
+								<div class="form-group">
+									<label class="col-md-12">Password</label>
+									<div class="col-md-12">
+										<input type="password" value="password"
+											class="form-control form-control-line" />
+									</div>
+								</div>
+								<div class="form-group">
+									<label class="col-md-12">Phone No</label>
+									<div class="col-md-12">
+										<input type="text" placeholder="123 456 7890"
+											class="form-control form-control-line" />
+									</div>
+								</div>
+								<div class="form-group">
+									<label class="col-md-12">Message</label>
+									<div class="col-md-12">
+										<textarea rows="5" class="form-control form-control-line"></textarea>
+									</div>
+								</div>
+								<div class="form-group">
+									<label class="col-sm-12">Select Country</label>
+									<div class="col-sm-12">
+										<select class="form-control form-control-line">
+											<option>London</option>
+											<option>India</option>
+											<option>Usa</option>
+											<option>Canada</option>
+											<option>Thailand</option>
+										</select>
+									</div>
+								</div>
+								<div class="form-group">
+									<div class="col-sm-12">
+										<button class="btn btn-success">Update Profile</button>
+									</div>
+								</div>
+							</form>
+						</div>
+					</div>
+				</div>
+			</div>
+			<!-- --------------------- end Timeline ---------------- -->
+		</div>
+		<!-- Column -->
+	</div>
+	<!-- Row -->
+	<!-- -------------------------------------------------------------- -->
+	<!-- End PAge Content -->
+	<!-- -------------------------------------------------------------- -->
+	<!-- -------------------------------------------------------------- -->
+	<!-- Right sidebar -->
+	<!-- -------------------------------------------------------------- -->
+	<!-- .right-sidebar -->
+	<!-- -------------------------------------------------------------- -->
+	<!-- End Right sidebar -->
+	<!-- -------------------------------------------------------------- -->
+</div>
+
+<!-- 툴팁 -->
+<script src="${pageContext.request.contextPath }/resources/assets/extra-libs/prism/prism.js"></script>
+
+
+<script type="text/javascript">
+	let map;
+	
+	function initMap() {
+	  map = new google.maps.Map(document.getElementById("map"), {
+	    center: { lat: -34.397, lng: 150.644 },
+	    zoom: 8,
+	  });
+	}
+	
+	window.initMap = initMap;
+
+	
+	
+	let imgFile = document.querySelector('#imgFile');
+	let imgDisp = document.querySelector('#imgDisp');
+	let image;
+	
+	imgFile.addEventListener('change',(e)=>{
+		console.log('file ch',e.target);
+		console.log('file ch',e.target.files[0]);
+		
+		
+        let fileReader = new FileReader(); // 파일 읽어주는 아저씨 생성!
+        fileReader.readAsDataURL(e.target.files[0]); // 읽으시옹
+
+        // 읽는 시간이 걸려서 onload 사용해야 함.
+        fileReader.onload = function(){ // 다 읽었다면 이거슬 하시옹!
+            let readContent = fileReader.result; // 읽은 결과!
+
+            image = document.createElement('img');
+            image.width = 175; // 사이즈 조절
+
+//             console.log('read',readContent);
+            image.src = readContent;
+
+            imgDisp.innerHTML = '';
+            imgDisp.appendChild(image);            
+        }
+	});
+	
+	// 이미지 수정 저장
+	document.querySelector('#imgSave').addEventListener('click',()=>{
+		console.log('img save ::',imgFile.files[0]);
+		
+        let formData = new FormData(); // 요거이 필요, 자동으로 multipart/form-data
+
+        // formData.append('이름','값');
+        formData.append('image',imgFile.files[0]);
+
+        let xhr = new XMLHttpRequest();
+        xhr.open('post','/emp/insertAf',true);
+        xhr.onreadystatechange = ()=>{
+            if(xhr.readyState == 4 && xhr.status == 200){     
+
+                console.log('결과:',xhr.responseText);
+                if(xhr.responseText == 1){
+                    alert('이미지 수정 완료.');
+                    document.querySelector('#imgClose').click();
+                    
+                    let profileImg = document.querySelector('#profileImg');
+                    profileImg.src = image.src;
+                }else{
+                    alert('이미지 수정 실패.');
+                }
+            }   
+        }
+        xhr.send(formData); 		
+	});
+	
+
+	
+	
+	
+	
+	
+	
+	
+	
+	
+</script>
+
+
+
+
+
+
+
+

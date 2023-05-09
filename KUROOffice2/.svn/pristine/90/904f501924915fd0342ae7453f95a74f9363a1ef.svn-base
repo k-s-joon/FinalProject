@@ -1,0 +1,34 @@
+package kr.or.ddit.approval.service;
+
+import java.util.List;
+import java.util.Map;
+
+import javax.servlet.http.HttpServletRequest;
+
+import org.springframework.ui.Model;
+
+import java.util.Map;
+
+import kr.or.ddit.approval.vo.ApFormVO;
+import kr.or.ddit.approval.vo.AplineVO;
+import kr.or.ddit.approval.vo.AppVO;
+import kr.or.ddit.approval.vo.RecVO;
+import kr.or.ddit.approval.vo.RecruitFormVO;
+import kr.or.ddit.approval.vo.VacationFormVO;
+import kr.or.ddit.approval.vo.VacationVO;
+import kr.or.ddit.employee.vo.EmployeeVO;
+
+public interface IAppService {
+
+	public void register(RecVO rec) throws Exception;	//채용품의서 등록
+	public ApFormVO selectForm(String apfName);
+	public void vacationInsert(VacationFormVO vacation) throws Exception;
+	public List<AppVO> getAppList() throws Exception;
+	public List<AppVO> getAppListByEmpNo(EmployeeVO empVO) throws Exception;
+	public List<AppVO> getAppEndListByEmpNo(EmployeeVO empVO) throws Exception;
+	public List<AplineVO> getAppLineListByEmpNo(EmployeeVO empVO) throws Exception;
+	public List<AppVO> getTempstListByEmpNo(EmployeeVO empVO) throws Exception;
+	public void recruitInsert(RecruitFormVO rec) throws Exception;
+	public void vacationTempst(VacationFormVO vacation) throws Exception;
+
+}
